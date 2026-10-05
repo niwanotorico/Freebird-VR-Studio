@@ -1,0 +1,20 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+
+# --- ビルド生成物・配布zip（配布は GitHub Releases で） ---
+*.zip
+dist/
+
+# --- Blender 一時ファイル ---
+*.blend1
+*.blend2
+
+# --- OS / エディタ ---
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.tmp

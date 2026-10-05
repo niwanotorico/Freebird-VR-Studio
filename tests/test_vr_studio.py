@@ -3,24 +3,22 @@
 VR Studio (freebird_plugin/vr_studio) test: one-press colour, no VR needed.
 
     python3 tests/test_vr_studio.py unit           # colour logic on Blender data (single process)
-    python3 tests/test_vr_studio.py ui             # the bl_xr panel: raycast a swatch, press it (needs Freebird's files,
-                                                   #   FREEBIRD_XR_DIR=<...>/scripts/addons/freebird_xr; skipped if missing)
-    python3 tests/test_vr_studio.py direct | relay # unit, then two instances: a VR colour reaches the other side
-                                                   #   through the EXISTING collab material sync (no collab changes)
+    python3 tests/test_vr_studio.py ui             # unit, then the bl_xr panel: raycast a swatch, press it (needs Freebird's
+                                                   #   files, FREEBIRD_XR_DIR=<...>/scripts/addons/freebird_xr; skipped if missing)
+
+Without the bpy module, run it through Blender:
+    blender --background --factory-startup --python tests/blender_runner.py -- tests/test_vr_studio.py ui
+
+The two-instance sync test (direct / relay) lives in FreebirdCollabo, next to its collab test harness.
 """
 
 import os
 import subprocess
 import sys
-import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "freebird_plugin"))
-
-from test_data import _wait  # noqa: E402
-from test_materials import _join, _session, _slots, _step, _val  # noqa: E402
-from test_sync import MODE_URLS, PORT, ROOT, STATE, _read_state, _write_state  # noqa: E402
 
 
 def _lin(hex_str):
@@ -396,124 +394,6 @@ def _check_fb_info():
 
 
 # ----------------------------------------------------------------------
-def run_host(mode):
-    import bpy
-    from vr_studio import materials
-
-    s = _session(mode, "host")
-    _wait(lambda: s.uid is not None, 10, s, "welcome")
-    _write_state(room=s.room)
-    _step(s, "guest_ready")
-    cube = bpy.data.objects["Cube"]
-
-    # 1. host paints the Cube (factory "Material", used only by the Cube -> edited in place),
-    #    and a new object without material (-> new "VR Ball") -> guest gets both
-    bpy.ops.mesh.primitive_uv_sphere_add(location=(3, 0, 0))
-    bpy.context.active_object.name = "Ball"
-    t = time.time()
-    while time.time() - t < 1.5:  # let obj_add for Ball go out first (as a user would)
-        bpy.context.view_layer.update()
-        s.tick()
-        time.sleep(0.02)
-    for ob in bpy.context.view_layer.objects:
-        ob.select_set(ob.name in ("Cube", "Ball"))
-    rep = materials.apply_color(materials.selected_targets(), _lin("#E53935"))
-    assert rep["edited"] == ["Material"] and rep["created"] == ["VR Ball"], rep
-    _step(s, "g1", "guest saw the red Cube and VR Ball")
-
-    # 2. guest repaints it -> host sees the new colour, same material
-    _wait(lambda: _slots("Cube") == ["Material"] and _val("Material", "Base Color") == _r3((*_lin("#1E88E5"), 1.0))
-          and _val("VR Ball", "Base Color") == _r3((*_lin("#1E88E5"), 1.0)), 30, s, "guest's blue")
-    assert len([m for m in bpy.data.materials if m.name.startswith("VR ")]) == 1
-    _write_state(h2=True)
-
-    # 3. host: Toon on the Cube (node chain), Emission on the Ball -> guest sees both Looks, colour kept
-    blue = _r3((*_lin("#1E88E5"), 1.0))
-    materials.apply_look([cube], "Toon")
-    materials.apply_look([bpy.data.objects["Ball"]], "Emission")
-    _step(s, "g3", "guest saw Toon + Emission")
-    # 4. guest: Glass on the Cube, then a new colour -> host: Glass, toon nodes gone, green
-    green = _r3((*_lin("#43A047"), 1.0))
-    _wait(lambda: materials.detect_look(bpy.data.materials["Material"]) == "Glass"
-          and _val("Material", "Base Color") == green, 30, s, "guest's green glass")
-    assert not any(n.name.startswith("VR Toon") for n in bpy.data.materials["Material"].node_tree.nodes)
-    assert _val("Material", "Base Color") == green and materials.detect_look(bpy.data.materials["VR Ball"]) == "Emission"
-    assert _val("VR Ball", "Base Color") == blue
-    _write_state(h4=True)
-
-    # 5. VIEW is local: host switches its VR shading -> nothing is sent, guest keeps its own
-    from vr_studio import view
-
-    before = {k: v[0] for k, v in s.stats["tx_by_type"].items()}
-    for mode in ("WIREFRAME", "MATERIAL", "RENDERED"):
-        view.set_vr_shading(mode)
-        t = time.time()
-        while time.time() - t < 1.2:
-            bpy.context.view_layer.update()
-            s.tick()
-            time.sleep(0.02)
-    grew = {k for k, v in s.stats["tx_by_type"].items() if v[0] > before.get(k, 0)}
-    assert grew <= {"presence", "ping", "pong"}, f"VR shading must not be sent, but these went out: {grew}"
-    _write_state(host_shading=view.get_vr_shading())
-    _step(s, "g5", "guest done")
-    print("=== VR STUDIO SYNC host: PASS ===")
-
-
-def run_guest(mode):
-    import bpy
-    from vr_studio import materials
-
-    s = _session(mode, "guest")
-    t0 = time.time()
-    while not _read_state().get("room") and time.time() - t0 < 20:
-        time.sleep(0.05)
-    _join(s, mode)
-    _write_state(guest_ready=True)
-
-    red = _r3((*_lin("#E53935"), 1.0))
-    _wait(lambda: _slots("Cube") == ["Material"] and _val("Material", "Base Color") == red
-          and _slots("Ball") == ["VR Ball"] and _val("VR Ball", "Base Color") == red, 30, s, "host's red Cube + VR Ball")
-    assert _r3(bpy.data.materials["VR Ball"].diffuse_color[:3]) == _r3(_lin("#E53935"))
-    _write_state(g1=True)
-
-    cube = bpy.data.objects["Cube"]
-    for ob in bpy.context.view_layer.objects:
-        ob.select_set(ob == cube or ob.name == "Ball")
-    materials.apply_color(materials.selected_targets(), _lin("#1E88E5"))
-    _step(s, "h2", "host saw blue")
-
-    blue = _r3((*_lin("#1E88E5"), 1.0))
-    _wait(lambda: materials.detect_look(bpy.data.materials["Material"]) == "Toon"
-          and materials.detect_look(bpy.data.materials["VR Ball"]) == "Emission", 30, s, "host's Toon + Emission")
-    assert _val("Material", "Base Color") == blue and _val("VR Ball", "Base Color") == blue
-    assert _val("VR Ball", "Emission Color") == blue
-    out = next(n for n in bpy.data.materials["Material"].node_tree.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
-    assert out.inputs["Surface"].links[0].from_node.name == "VR Toon Emit"
-    _write_state(g3=True)
-    materials.apply_look([cube], "Glass")
-    materials.apply_color([cube], _lin("#43A047"))
-    _step(s, "h4", "host saw green glass")
-
-    # 5. host switched its VR shading to RENDERED: ours stays what we chose
-    from vr_studio import view
-
-    view.set_vr_shading("MATERIAL")
-    _wait(lambda: _read_state().get("host_shading") == "RENDERED", 30, s, "host's shading changes")
-    t = time.time()
-    while time.time() - t < 1.5:
-        bpy.context.view_layer.update()
-        s.tick()
-        time.sleep(0.02)
-    assert view.get_vr_shading() == "MATERIAL", view.get_vr_shading()
-    _write_state(g5=True)
-    t = time.time()
-    while time.time() - t < 1.0:
-        s.tick()
-        time.sleep(0.02)
-    print("=== VR STUDIO SYNC guest: PASS ===")
-
-
-# ----------------------------------------------------------------------
 def _args():
     return sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
 
@@ -534,10 +414,8 @@ def main():
     args = _args()
     mode = args[0] if args else "unit"
     role = args[1] if len(args) > 1 else None
-    if role == "host":
-        return run_host(mode)
-    if role == "guest":
-        return run_guest(mode)
+    if mode not in ("unit", "ui"):
+        raise SystemExit(f"unknown mode {mode!r}: use unit | ui")
     if role == "-":
         return run_unit() if mode == "unit" else run_ui()
     print("fb_info:", _check_fb_info())
@@ -547,26 +425,6 @@ def main():
             sys.exit(rc)
         if part == mode:
             sys.exit(0)
-    import glob
-
-    for f in glob.glob(STATE + "*"):
-        os.remove(f)
-    procs = []
-    env = dict(os.environ)
-    if mode in MODE_URLS:
-        env["COLLAB_RELAY_URL"] = os.environ.get("COLLAB_RELAY_URL") or MODE_URLS[mode]
-        if not os.environ.get("COLLAB_RELAY_URL"):
-            procs.append(subprocess.Popen([sys.executable, os.path.join(ROOT, "relay", "collab_relay.py"), str(PORT)]))
-            time.sleep(1.0)
-    run_mode = "direct" if mode == "direct" else "relay"
-    host = subprocess.Popen(_child(run_mode, "host"), env=env)
-    time.sleep(1.0)
-    guest = subprocess.Popen(_child(run_mode, "guest"), env=env)
-    rc_h, rc_g = host.wait(300), guest.wait(300)
-    for p in procs:
-        p.terminate()
-    print(f"\n=== VR STUDIO {mode.upper()}: host rc={rc_h} guest rc={rc_g} ===")
-    sys.exit(0 if rc_h == 0 and rc_g == 0 else 1)
 
 
 if __name__ == "__main__":

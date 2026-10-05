@@ -10,7 +10,7 @@ It installs like any other Blender add-on: no Git, no code, no copying files by 
 It does **not** modify Blender, Freebird XR or any other add-on.
 
 > Early public version (alpha). Feedback is welcome on the
-> [GitHub issues page](https://github.com/niwanotorico/FreebirdCollabo/issues).
+> [GitHub issues page](https://github.com/niwanotorico/Freebird-VR-Studio/issues).
 
 ---
 
