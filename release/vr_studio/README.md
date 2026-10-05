@@ -70,11 +70,12 @@ The panels appear in the VR Studio area right next to the main menu and follow y
 - If Base Color is driven by an image texture, pressing a colour unplugs that texture (the image node
   stays in the material; Undo plugs it back in).
 
-### Using it together with Freebird Collaboration Layer (optional)
+### Using it together with FreebirdCollabo (optional)
 
 VR Studio works on its own. If you also use the
-[Freebird Collaboration Layer](https://github.com/niwanotorico/FreebirdCollabo) add-on, colour and
-look changes reach everyone in the room through its material sync. **View** is never shared — each
+[FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo) add-on (shown as
+*Freebird Collaboration Layer* in Blender's add-on list), colour and look changes reach everyone
+in the room through its material sync. **View** is never shared — each
 person keeps their own shading.
 
 ---

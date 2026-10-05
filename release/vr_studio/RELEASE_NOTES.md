@@ -3,8 +3,8 @@
 **Tag:** `vr-studio-v@VERSION@` · **Pre-release** · Asset: `vr_studio-v@VERSION@.zip`
 
 VR Studio is a plugin for **Freebird XR** that lets you colour, restyle and re-shade your Blender
-scene from inside VR with one trigger press. It is a separate download from the Freebird
-Collaboration Layer add-on and works without it.
+scene from inside VR with one trigger press. It is a separate download from the
+[FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo) add-on and works without it.
 
 ## Install (like any Blender add-on)
 
@@ -30,7 +30,7 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 - **View** — headset shading switch: Wireframe / Solid / Material Preview / Rendered. Local to you only.
 - Panels live in a VR Studio area to the right of Freebird's main menu and follow your hand.
 - Freebird's Undo / Redo work for Color and Look.
-- With Freebird Collaboration Layer: Color / Look changes sync to everyone; View never syncs.
+- With FreebirdCollabo: Color / Look changes sync to everyone; View never syncs.
 
 ## Known limitations
 
