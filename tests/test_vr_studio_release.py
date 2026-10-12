@@ -13,8 +13,8 @@ so the Blender add-ons folder and ~/.freebird are brand new and the dev checkout
           "restart" -> Freebird's own loader shows Color / Look / View and they work;
           all vr_studio modules come from ~/.freebird/plugins (no dev folder, no zip needed)
  live     same, but with Freebird already running: the buttons appear without a restart
- update   an existing (modified) v0.3.0 / an older v0.2.0 is backed up intact, then replaced;
-          a newer v0.4.0 is left alone; a failed swap puts the old copy back
+ update   an existing (modified) v0.4.0 / an older v0.2.0 is backed up intact, then replaced;
+          a newer v0.5.0 is left alone; a failed swap puts the old copy back
  disable  disabling / removing the add-on leaves the plugin in place and working
  remove   "Remove VR Studio Plugin" deletes only the plugin folder; the add-on does not
           reinstall it on the next start
@@ -44,7 +44,7 @@ def check_zip(zip_path):
         assert not any("__pycache__" in n or n.endswith((".pyc", ".cmd")) for n in names), names
         payload = [n for n in names if n.startswith(f"{ADDON}/payload/")]
         assert all(n.endswith(".py") or ("/icons/" in n and n.endswith(".png")) for n in payload), payload
-        assert len([n for n in payload if "/icons/" in n]) == 15
+        assert len([n for n in payload if "/icons/" in n]) == 27
         rest = sorted(set(names) - set(payload))
         assert rest == sorted(f"{ADDON}/{x}" for x in ("__init__.py", "README.md", "LICENSE.txt")), rest
         init = z.read(f"{ADDON}/__init__.py").decode()
@@ -56,7 +56,7 @@ def check_zip(zip_path):
 
 # ----------------------------------------------------------------------------- child processes
 PRELUDE = r'''
-import os, sys, json, shutil, filecmp
+import os, re, sys, json, shutil, filecmp
 FB, HOME, ZIP, DEV = os.environ["T_FB"], os.environ["T_HOME"], os.environ["T_ZIP"], os.environ["T_DEV"].split(os.pathsep)
 assert os.path.expanduser("~") == HOME
 import bpy, addon_utils
@@ -115,7 +115,7 @@ def check_vr_studio_in_freebird(press=True):
         for label in ("Color", "Look", "View"):
             by_label[label].dispatch_event("pointer_main_press_end", None)
         secs = mod._sections
-        assert {k: len(s.tiles) for k, s in secs.items()} == {"color": 32, "look": 8, "view": 4}
+        assert {k: len(secs[k].tiles) for k in ("color", "look", "view")} == {"color": 32, "look": 8, "view": 4}
         secs["color"].tiles[4].dispatch_event("pointer_main_press_end", None)
         assert bpy.data.objects["Cube"].material_slots[0].material.name == "VR Cube"
         secs["look"].tiles[4].dispatch_event("pointer_main_press_end", None)
@@ -137,7 +137,7 @@ def write_fake_plugin(version, extra=None):
     src = m.PAYLOAD if m else None
     shutil.copytree(src, PLUG)
     init = os.path.join(PLUG, "__init__.py")
-    s = open(init, encoding="utf-8").read().replace('"version": (0, 3, 0)', f'"version": {version}')
+    s = re.sub(r'"version": \(\d+, \d+, \d+\)', f'"version": {version}', open(init, encoding="utf-8").read(), count=1)
     open(init, "w", encoding="utf-8").write(s)
     for rel, data in (extra or {}).items():
         p = os.path.join(PLUG, rel)
@@ -185,7 +185,7 @@ assert "Plugins menu" in m._last_message, m._last_message
     "update_modified_same_version": r'''
 import zipfile
 os.makedirs(os.path.dirname(PLUG))
-with zipfile.ZipFile(ZIP) as z:        # a v0.3.0 installed by hand earlier, with local extras
+with zipfile.ZipFile(ZIP) as z:        # a v0.4.0 installed by hand earlier, with local extras
     for n in z.namelist():
         if n.startswith("vr_studio_installer/payload/vr_studio/"):
             p = os.path.join(PLUG, n.split("payload/vr_studio/")[1]); os.makedirs(os.path.dirname(p), exist_ok=True)
@@ -199,7 +199,7 @@ assert m.status()[0] == "modified", m.status()
 m.auto_setup()
 assert m.status()[0] == "current" and same_tree(m.PAYLOAD, PLUG)
 assert not os.path.exists(os.path.join(PLUG, "panel.py"))
-backups = os.listdir(BACK); assert len(backups) == 1 and backups[0].startswith("vr_studio_v0.3.0_"), backups
+backups = os.listdir(BACK); assert len(backups) == 1 and backups[0].startswith("vr_studio_v0.4.0_"), backups
 bk = os.path.join(BACK, backups[0])
 got = {os.path.relpath(os.path.join(d, n), bk): open(os.path.join(d, n), "rb").read() for d, _, ns in os.walk(bk) for n in ns}
 assert got == snapshot, "backup must be the untouched old copy"
@@ -217,12 +217,12 @@ assert m.read_version(os.path.join(BACK, os.listdir(BACK)[0])) == (0, 2, 0)
 ''',
     "keep_newer": r'''
 m = install_addon()
-write_fake_plugin((0, 4, 0))
+write_fake_plugin((0, 5, 0))
 m.auto_setup()
-assert m.status() == ("newer", (0, 4, 0)) and not os.path.exists(BACK), m.status()
+assert m.status() == ("newer", (0, 5, 0)) and not os.path.exists(BACK), m.status()
 assert "left unchanged" in m._last_message
 bpy.ops.vr_studio_setup.install("EXEC_DEFAULT")   # explicit button (after its confirm) still can replace
-assert m.status()[0] == "current" and m.read_version(os.path.join(BACK, os.listdir(BACK)[0])) == (0, 4, 0)
+assert m.status()[0] == "current" and m.read_version(os.path.join(BACK, os.listdir(BACK)[0])) == (0, 5, 0)
 ''',
     "swap_failure_restores": r'''
 m = install_addon()

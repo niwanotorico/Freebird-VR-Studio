@@ -32,7 +32,7 @@ It does **not** modify Blender, Freebird XR or any other add-on.
 3. Make sure **VR Studio for Freebird XR** is ticked (enabled).
    It sets the plugin up for Freebird automatically — expand the add-on to see
    *VR Studio plugin: Installed @VERSION@ - up to date*.
-4. Start VR with Freebird XR → open the Freebird menu → **Plugins** → **Color**, **Look**, **View**.
+4. Start VR with Freebird XR → open the Freebird menu → **Plugins** → **Color**, **Look**, **View**, **Grab**, **Edit**, **Pudding**.
    (If they are not there yet, restart Blender once.)
 
 ### Updating
@@ -62,6 +62,9 @@ The panels appear in the VR Studio area right next to the main menu and follow y
 | **Color** | 32-colour palette. Select objects, point at a colour, pull the trigger — done. |
 | **Look** | 8 material looks: **Clay, Matte, Glossy, Plastic, Metallic, Glass, Emission, Toon**. Independent of Color: a blue Matte object turned Metallic stays blue, and a new colour keeps the look. |
 | **View** | Switches how *your headset* shows the scene: **Wireframe / Solid / Material Preview / Rendered**. It only changes your own view. |
+| **Grab** | Gravity Sketch style grab: a sphere on your middle finger grabs what it touches (reach Off / 3 / 5 / 8 cm). Squeeze + B deletes, squeeze + trigger duplicates, left X groups. |
+| **Edit** | Object / Edit / Pose Mode, Vert / Edge / Face, proportional editing. In Edit Mode the sphere grabs vertices. |
+| **Pudding** | Makes things jiggle: Off / Soft / Wobbly / Jelly. **New** puts a pudding in your hand. |
 
 - **Undo / Redo** are Freebird's own (they cover Color and Look changes).
 - Colour and look are ordinary Blender materials, so they are saved in the .blend and render normally.

@@ -35,13 +35,20 @@ VR_MATERIAL_PREFIX = "VR "
 
 
 def selected_targets(context=None):
-    """Selected objects that can hold materials (plus the active object while in Edit Mode)."""
+    """Selected objects that can hold materials (selected VR groups count as all their members;
+    plus the active object while in Edit Mode)."""
     context = context or bpy.context
     view_layer = context.view_layer
+    from .groups import is_group, with_descendants
+
     out = []
     for ob in view_layer.objects:
-        if ob.select_get(view_layer=view_layer) and _can_hold_materials(ob):
-            out.append(ob)
+        if not ob.select_get(view_layer=view_layer):
+            continue
+        members = with_descendants([ob]) if is_group(ob) else [ob]  # a group colours all its members
+        for m in members:
+            if m not in out and _can_hold_materials(m):
+                out.append(m)
     active = view_layer.objects.active
     if active is not None and active not in out and active.mode == "EDIT" and _can_hold_materials(active):
         out.append(active)

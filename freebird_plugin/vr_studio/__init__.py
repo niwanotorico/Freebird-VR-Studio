@@ -9,11 +9,31 @@ and restarting Blender (Freebird loads plugins when it starts).
 Freebird menu -> Plugins (CUSTOM) -> "Color" / "Look" / "View" toggle their panels in the VR Studio
 area, right next to the main menu on the left hand (on the side Freebird's sub-menus open).
     COLOR  32 colours.   Select objects, point at a colour, pull the trigger: done.
+           The colour (and LOOK) you pick is also your pen's: what you draw next comes out in it.
     LOOK   8 materials (Clay / Matte / Glossy / Plastic / Metallic / Glass / Emission / Toon).
            Independent of Color: blue + Matte -> blue + Metallic keeps the blue, and a new
            colour keeps the Look.
     VIEW   the headset's shading: Wireframe / Solid / Material Preview / Rendered.
            Only this person's view (never synced to the collab room).
+    GRAB   Gravity Sketch style grab: a sphere on your hand (middle finger), always shown,
+           red when a squeeze would grab. Reach OFF (Freebird's 1 cm tip) / 3 / 5 / 8 cm.
+           Everything the sphere touches is grabbed together and stays selected after you let
+           go (hand deep inside a big object grabs that one). Just you (LOCAL).
+    DELETE squeeze to hold something + B = delete it (Gravity Sketch). Empty hand + B is
+           Freebird's quick tools as before. Undo brings it back.
+    COPY   squeeze to hold something + trigger = duplicate it (Freebird's clone; the copy stays
+           in your hand). Freebird's A button still clones too.
+    BUTTONS Gravity Sketch style: B = undo (holding something: delete), A = COLOR panel,
+           X tap = group, right stick up/down = grab sphere size. Controller icons match.
+    OUTLINE what the grab sphere touches (or what you hold) gets a red outline. Just you.
+    GROUP  left X tap: 2+ selected (or held) -> group (an Empty "VRGroup" parent); a group ->
+           ungroup. Grabbing a member grabs the whole group. Holding X is still Freebird's
+           "select while held".
+    EDIT   Object / Edit / Pose Mode (leaving Edit Mode brings your pen back), Vert / Edge /
+           Face, proportional editing on / off. In Edit Mode the grab sphere grabs vertices.
+    PLAY   Puddinger behaviours. Jiggle: selected / held things become jiggly; bump them with
+           the grab sphere or move them and they wobble (each Blender draws its own wobble).
+Section headers show GLOBAL (synced to the room) or LOCAL (just you).
 Undo / Redo are Freebird's own (left joystick / controller buttons).
 
 Independent of the freebird_collab add-on: it only edits Blender materials, and the
@@ -22,7 +42,7 @@ collab material + node tree sync (when a room is open) carries the change to eve
 
 import os
 
-fb_info = {"name": "VR Studio", "version": (0, 3, 0)}
+fb_info = {"name": "VR Studio", "version": (0, 4, 0)}
 
 PLUGIN_ID = "vr_studio"
 ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
@@ -32,6 +52,9 @@ SECTIONS = [
     ("color", "Color", "color.png", ("color_section", "ColorSection")),
     ("look", "Look", "look.png", ("look_section", "LookSection")),
     ("view", "View", "view.png", ("view_section", "ViewSection")),
+    ("grab", "Grab", "grab.png", ("grab_section", "GrabSection")),
+    ("edit", "Edit", "edit.png", ("edit_section", "EditSection")),
+    ("play", "Pudding", "play.png", ("play_section", "PlaySection")),
 ]
 
 _area = None
@@ -74,9 +97,20 @@ def _toggler(button_id):
 
 def _on_xr_start(self, event_name, event):
     _build().attach()  # sections stay hidden until their button is pressed
+    _grab_sphere(True)
+
+
+def _grab_sphere(state):
+    try:
+        from . import grab
+
+        grab.show_sphere() if state else grab.hide_sphere()
+    except Exception as e:
+        print(f"[vr_studio] grab sphere: {e}")
 
 
 def _on_xr_end(self, event_name, event):
+    _grab_sphere(False)
     if _area is not None:
         _area.detach()
 
@@ -90,13 +124,27 @@ def register():
     from bl_xr import root, xr_session
     from freebird.api import add_launcher_button
 
+    try:
+        from . import controls
+
+        controls._color_toggle = _toggler("color")  # right A = COLOR (Gravity Sketch)
+    except Exception as e:
+        print(f"[vr_studio] controls: {e}")
+
     for button_id, label, icon, _cls in SECTIONS:
         add_launcher_button(PLUGIN_ID, button_id, label, _toggler(button_id), _icon(icon))
     root.add_event_listener("fb.xr_start", _on_xr_start)
     root.add_event_listener("fb.xr_end", _on_xr_end)
     try:
+        from . import grab
+
+        grab.install()
+    except Exception as e:
+        print(f"[vr_studio] easy grab not installed: {e}")
+    try:
         if xr_session.is_running:  # plugin (re)loaded while already in VR
             _build().attach()
+            _grab_sphere(True)
     except Exception:
         pass
 
@@ -110,6 +158,13 @@ def unregister():
         remove_launcher_button(PLUGIN_ID, button_id)
     root.remove_event_listener("fb.xr_start", _on_xr_start)
     root.remove_event_listener("fb.xr_end", _on_xr_end)
+    try:
+        from . import grab
+
+        grab.uninstall()
+        grab.hide_sphere()
+    except Exception:
+        pass
     if _area is not None:
         _area.detach()
     _area = None

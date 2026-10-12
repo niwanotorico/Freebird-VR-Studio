@@ -22,10 +22,10 @@ Rules:
 bl_info = {
     "name": "VR Studio for Freebird XR",
     "author": "niwanotorico",
-    "version": (0, 3, 0),
+    "version": (0, 4, 0),
     "blender": (4, 2, 0),
     "location": "Edit > Preferences > Add-ons > VR Studio for Freebird XR",
-    "description": "Installs the VR Studio plugin (Color / Look / View panels) into Freebird XR",
+    "description": "Installs the VR Studio plugin (Color / Look / View / Grab / Edit / Pudding panels) into Freebird XR",
     "doc_url": "https://github.com/niwanotorico/Freebird-VR-Studio",
     "tracker_url": "https://github.com/niwanotorico/Freebird-VR-Studio/issues",
     "category": "3D View",

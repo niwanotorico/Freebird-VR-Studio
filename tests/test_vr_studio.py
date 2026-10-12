@@ -352,7 +352,8 @@ def run_ui():
         assert xr_shading.type == mode and view.get_vr_shading() == mode, (xr_shading.type, mode)
         area._refresh()
         assert [t.current for t in vs.tiles] == [t is tile for t in vs.tiles]
-    assert vs.last_message.startswith("Rendered ("), vs.last_message  # names the render engine
+    assert vs.last_message.startswith("Rendered - very heavy in VR (") and vs.last_message.endswith(")"), \
+        vs.last_message  # warns it is heavy and names the render engine
     after = [sp.shading.type for sc in bpy.data.screens for a in sc.areas if a.type == "VIEW_3D" for sp in a.spaces
              if sp.type == "VIEW_3D"]
     assert after == desktop, "the desktop 3D Viewport must keep its own shading"
@@ -361,18 +362,18 @@ def run_ui():
     area._refresh()
     assert vs.tiles[1].current and not vs.tiles[3].current  # follows changes made elsewhere too
 
-    # nothing selected -> friendly message, nothing created
+    # nothing selected -> only the pen's look changes, nothing created
     for ob in bpy.context.view_layer.objects:
         ob.select_set(False)
     n = len(bpy.data.materials)
     look.tiles[0].dispatch_event("pointer_main_press_end", None)
-    assert look.last_message == "Select an object first" and len(bpy.data.materials) == n
+    assert look.last_message.startswith("Pen: ") and len(bpy.data.materials) == n, look.last_message
 
     # the plugin entry builds the same area with both sections
     import vr_studio
 
     vr_studio._on_xr_start(None, "fb.xr_start", None)
-    assert set(vr_studio._sections) == {"color", "look", "view"} and vr_studio._area.node.parent is bl_xr.root
+    assert set(vr_studio._sections) == {"color", "look", "view", "grab", "edit", "play"} and vr_studio._area.node.parent is bl_xr.root
     vr_studio._on_xr_end(None, "fb.xr_end", None)
     assert vr_studio._area.node.parent is None
     area.detach()
