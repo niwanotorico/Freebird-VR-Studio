@@ -268,10 +268,18 @@ def run_ui():
     import freebird  # noqa: F401  (registers Freebird's settings the main menu reads)
     from freebird.ui import main_menu as mm
 
-    from vr_studio import materials
+    import tempfile
+
+    from vr_studio import area as area_mod
+    from vr_studio import grab, materials
     from vr_studio.area import SIDE_GAP, StudioArea
     from vr_studio.color_section import SWATCH, ColorSection
     from vr_studio.look_section import TILE, LookSection
+
+    # never read / write this PC's ~/.freebird/vr_studio_settings.json: a panel layout arranged
+    # in VR there (COLOR in another column ...) would move the panels this test measures
+    settings = os.path.join(tempfile.mkdtemp(), "vr_studio_settings.json")
+    area_mod.LAYOUT_PATH = grab.SETTINGS_PATH = settings
 
     for ob in bpy.context.view_layer.objects:
         ob.select_set(ob.name == "Cube")
