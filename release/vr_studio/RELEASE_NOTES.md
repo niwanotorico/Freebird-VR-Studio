@@ -1,4 +1,4 @@
-# VR Studio v@VERSION@ — Grab / Edit / Pudding (alpha)
+# VR Studio v@VERSION@ — Picker (alpha)
 
 **Tag:** `vr-studio-v@VERSION@` · **Pre-release** · Asset: `vr_studio-v@VERSION@.zip`
 
@@ -11,7 +11,7 @@ scene from inside VR with one trigger press. It is a separate download from the
 1. Download **`vr_studio-v@VERSION@.zip`** below — don't unzip it.
 2. Blender → **Edit › Preferences › Add-ons › ⌄ › Install from Disk…** → pick the zip → make sure
    **VR Studio for Freebird XR** is enabled.
-3. Start VR → Freebird menu → **Plugins** → **Color / Look / View / Grab / Edit / Pudding** (restart Blender once if they're not there yet).
+3. Start VR → Freebird menu → **Plugins** → **Color / Picker / Look / View / Grab / Edit / Pudding** (restart Blender once if they're not there yet).
 
 The add-on only sets up the plugin for Freebird XR (install / update / remove). Updating = installing a
 newer zip the same way; the old plugin is backed up to `~/.freebird/plugin_backups/` first.
@@ -21,6 +21,18 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 
 - **Blender 5.2** (tested). Blender 4.2+ expected to work, not yet tested.
 - **Freebird XR 2.15.0** or newer.
+
+## New in v0.5
+
+- **Picker** — any colour, not just the 32 swatches: a hue × lightness map (pull the trigger, slide,
+  let go) and an 8-step saturation strip. **Pick** is an eyedropper: touch something with the grab sphere
+  and its colour becomes your pen's / current colour; **Paint** colours the selection with it.
+- **Menu** — closing Freebird's menu hides the VR Studio panels too; opening it brings them back
+  (A still opens the Color panel while the menu is closed).
+- **Pudding** — **New** makes the pudding as two objects (custard + caramel) in one group, so the caramel
+  stays brown in Solid view's "Object" colour mode; the group wobbles as one.
+- **Grab** — after squeeze + trigger (duplicate), the copies are what ends up selected, not the originals.
+- **Pudding (Blender 5)** — a group member that is not moving itself now wobbles too.
 
 ## New in v0.4
 
@@ -52,6 +64,7 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 - **Rendered** with Cycles is very heavy in VR — use EEVEE.
 - **Glass** transparency needs Raytracing enabled (EEVEE).
 - Pressing a colour unplugs an image texture on Base Color (Undo restores it).
+- Picker's object colour (Solid view's "Object" colour) does not sync to the room; the material colour does.
 - Only tested on Windows with Blender 5.2 + Freebird XR 2.15.0.
 
 ## Checksums

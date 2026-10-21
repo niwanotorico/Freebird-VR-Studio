@@ -47,3 +47,16 @@ def swatches():
         srgb = hex_to_srgb(hx)
         out.append((name, srgb, srgb_to_linear(srgb)))
     return out
+
+
+def _channel_to_srgb(c):
+    c = max(0.0, min(1.0, c))
+    return c * 12.92 if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055
+
+
+def linear_to_srgb(rgb):
+    return tuple(_channel_to_srgb(c) for c in rgb)
+
+
+def srgb_hex(rgb):
+    return "#" + "".join(f"{max(0, min(255, round(c * 255))):02X}" for c in rgb[:3])

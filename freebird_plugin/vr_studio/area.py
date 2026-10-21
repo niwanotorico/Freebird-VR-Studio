@@ -220,6 +220,8 @@ class StudioArea:
         self._columns = []
         self._min_y = self._max_y = 0.0
         self.width = self.height = 0.0
+        self._menu_was = True
+        self._hidden_by_menu = False
 
     def add(self, section):
         section.area = self
@@ -243,6 +245,12 @@ class StudioArea:
         self._dragging = None
 
     def toggle(self, section):
+        if self._hidden_by_menu:  # menu closed: the button (A) shows the panel anyway
+            self._hidden_by_menu = False
+            section.set_visible(True)
+            self._layout()
+            self._refresh()
+            return
         section.set_visible(not section.visible)
         self._layout()
         self._refresh()
@@ -314,12 +322,39 @@ class StudioArea:
                 edge = min(edge, l)
         return edge - SIDE_GAP - self.width
 
+    def _menu_open(self):
+        mm = sys.modules.get("freebird.ui.main_menu")
+        try:
+            return bool(mm.menu_group.style.get("visible", True)) if mm is not None else True
+        except Exception:
+            return True
+
+    def _follow_menu(self):
+        """Closing Freebird's menu (menu button) hides the VR Studio panels too, opening it brings
+        them back. A panel opened while the menu is closed (A = COLOR) still shows."""
+        menu = self._menu_open()
+        if menu != self._menu_was:
+            self._menu_was = menu
+            self._hidden_by_menu = not menu
+            if not menu:
+                self._dragging = None
+        want = not self._hidden_by_menu
+        # hide the panels, never the area node itself: a hidden node gets no update() calls,
+        # so it could never notice the menu opening again
+        if self.node.style.get("visible", True) is not True:
+            self.node.style["visible"] = True
+        for s in self.sections:
+            v = s.visible and want
+            if s.node.style.get("visible") != v:
+                s.node.style["visible"] = v
+        return want
+
     def _update(self):
         if not xr_session.is_running:
             return
         self._layout()
         visible = any(s.visible for s in self.sections)
-        if not visible:
+        if not self._follow_menu() or not visible:
             return
         left, right, bottom, others = self._menu_space()
         tx = self._target_x(left, right, bottom, others)
@@ -331,6 +366,13 @@ class StudioArea:
         self.node.position = origin + rot @ (Vector((self._x, bottom, AREA_Z)) * scale)
         if self._dragging is not None:
             self._arrange_step()
+        for s in self.sections:  # per-frame work of a panel (Picker: live preview, eyedropper)
+            if s.visible and hasattr(s, "tick"):
+                try:
+                    s.tick()
+                except Exception as e:
+                    if self._frame % 300 == 0:
+                        print(f"[vr_studio] {s.title} tick: {e}")
         self._frame += 1
         if self._frame % REFRESH_EVERY == 0:
             self._refresh()
@@ -349,7 +391,7 @@ class StudioArea:
 
     def panel_at(self, world_point, margin):
         """The visible panel the grip sphere touches (area coordinates, `margin` in metres)."""
-        if self.node.parent is None:
+        if self.node.parent is None or self._hidden_by_menu:
             return None
         p = self.to_local(world_point)
         if abs(p.z) > margin + 0.01:

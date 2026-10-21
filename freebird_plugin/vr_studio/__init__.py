@@ -35,6 +35,8 @@ area, right next to the main menu on the left hand (on the side Freebird's sub-m
            "select while held".
     EDIT   Object / Edit / Pose Mode (leaving Edit Mode brings your pen back), Vert / Edge /
            Face, proportional editing on / off. In Edit Mode the grab sphere grabs vertices.
+    PICKER any colour (hue x lightness map + saturation strip) and an eyedropper: Pick, then
+           touch something with the grab sphere; its colour becomes the pen's / current colour.
     PLAY   Puddinger behaviours. Jiggle: selected / held things become jiggly; bump them with
            the grab sphere or move them and they wobble (each Blender draws its own wobble).
 Section headers show GLOBAL (synced to the room) or LOCAL (just you).
@@ -46,7 +48,7 @@ collab material + node tree sync (when a room is open) carries the change to eve
 
 import os
 
-fb_info = {"name": "VR Studio", "version": (0, 4, 0)}
+fb_info = {"name": "VR Studio", "version": (0, 5, 0)}
 
 PLUGIN_ID = "vr_studio"
 ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
@@ -54,6 +56,7 @@ ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
 # launcher button id, label, icon, section class (module, name). Order = bottom-to-top in the area.
 SECTIONS = [
     ("color", "Color", "color.png", ("color_section", "ColorSection")),
+    ("picker", "Picker", "picker.png", ("picker_section", "PickerSection")),
     ("look", "Look", "look.png", ("look_section", "LookSection")),
     ("view", "View", "view.png", ("view_section", "ViewSection")),
     ("grab", "Grab", "grab.png", ("grab_section", "GrabSection")),

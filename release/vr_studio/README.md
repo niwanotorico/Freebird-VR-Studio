@@ -32,7 +32,7 @@ It does **not** modify Blender, Freebird XR or any other add-on.
 3. Make sure **VR Studio for Freebird XR** is ticked (enabled).
    It sets the plugin up for Freebird automatically — expand the add-on to see
    *VR Studio plugin: Installed @VERSION@ - up to date*.
-4. Start VR with Freebird XR → open the Freebird menu → **Plugins** → **Color**, **Look**, **View**, **Grab**, **Edit**, **Pudding**.
+4. Start VR with Freebird XR → open the Freebird menu → **Plugins** → **Color**, **Picker**, **Look**, **View**, **Grab**, **Edit**, **Pudding**.
    (If they are not there yet, restart Blender once.)
 
 ### Updating
@@ -60,6 +60,7 @@ The panels appear in the VR Studio area right next to the main menu and follow y
 | Button | What it does |
 |---|---|
 | **Color** | 32-colour palette. Select objects, point at a colour, pull the trigger — done. |
+| **Picker** | Any colour: a hue × lightness map (pull the trigger, slide, let go) and a saturation strip. **Pick** = eyedropper: touch something with the grab sphere and its colour becomes your pen's / current colour; **Paint** colours the selection with it. |
 | **Look** | 8 material looks: **Clay, Matte, Glossy, Plastic, Metallic, Glass, Emission, Toon**. Independent of Color: a blue Matte object turned Metallic stays blue, and a new colour keeps the look. |
 | **View** | Switches how *your headset* shows the scene: **Wireframe / Solid / Material Preview / Rendered**, Overlays on / off, and **Controller: Normal / See-through** (faint controllers, so the grab sphere and what is behind them stay visible). It only changes your own view. |
 | **Grab** | Gravity Sketch style grab: a sphere on your middle finger grabs what it touches (reach Off / 3 / 5 / 8 cm). Squeeze + B deletes, squeeze + trigger duplicates, left X groups. The sphere's position on your hand can be fine-tuned in 0.5 cm steps (Axis / - / + / Reset). |
@@ -80,6 +81,7 @@ VR Studio works on its own. If you also use the
 *Freebird Collaboration Layer* in Blender's add-on list), colour and look changes reach everyone
 in the room through its material sync. **View** is never shared — each
 person keeps their own shading.
+**Known limitation:** Picker's object colour (Solid view's "Object" colour) does not sync to the room; the material colour does.
 
 ---
 
