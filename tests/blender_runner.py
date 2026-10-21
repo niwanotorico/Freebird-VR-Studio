@@ -4,6 +4,7 @@
 import os
 import runpy
 import sys
+import traceback
 
 
 args = sys.argv[sys.argv.index("--") + 1:]
@@ -12,4 +13,11 @@ if not args:
 
 script = os.path.abspath(args[0])
 sys.argv = [script, *args[1:]]
-runpy.run_path(script, run_name="__main__")
+try:
+    runpy.run_path(script, run_name="__main__")
+except SystemExit:
+    raise
+except BaseException:
+    # Blender prints a Python error from --python and still exits 0: make a failing test fail
+    traceback.print_exc()
+    sys.exit(1)

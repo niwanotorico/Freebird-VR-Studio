@@ -597,7 +597,9 @@ def _child(mode, role):
     except ImportError:
         blender = ""
     if blender:
-        return [blender, "--background", "--factory-startup", "--python", __file__, "--", mode, role]
+        # through blender_runner: a failed assert exits 1 (Blender alone would exit 0)
+        runner = os.path.join(HERE, "blender_runner.py")
+        return [blender, "--background", "--factory-startup", "--python", runner, "--", __file__, mode, role]
     return [sys.executable, __file__, mode, role]
 
 
