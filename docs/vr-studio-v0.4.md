@@ -3,8 +3,12 @@
 v0.3（Color / Look / View）は実機確認済み。v0.4 は Gravity Sketch 風の **GRAB**・ボタン割り当て・グループ・**EDIT**、
 そして Puddinger の揺れを移植した **PUDDING** を追加。
 
-確定版：test25（2026-10-13、ちきんさんが「最高」と確認）。リポジトリの `freebird_plugin/vr_studio/` は
-5080 の `~/.freebird/plugins/vr_studio`（test25）と同じ中身（確認用の `icons/pudding_icon_user.png` は除く）。
+確定版：test25（2026-10-13、ちきんさんが「最高」と確認）＋ コントローラー透け表示・掴み球オフセット（2026-10-21 実機確認、
+`docs/checklist-controller-see-through.md`）。どちらも v0.4.0 に含める。
+
+リポジトリの `freebird_plugin/vr_studio/` は 5080 の `~/.freebird/plugins/vr_studio` と同じではない。
+実機フォルダには、その後の未確認の作業（Picker、collab_bridge、メニュー連動、プリンの 2 パーツ化など。
+ブランチ `wip-picker-collab-bridge` に保全）も入っているため。v0.4.0 にはそれらを含めない。
 
 ## 1. 追加・変更したもの
 
