@@ -48,17 +48,35 @@ def debug(msg):
 
 
 # -- settings (local file, per person) -------------------------------------
+def load_setting(key, default=None):
+    try:
+        with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f).get(key, default)
+    except Exception:
+        return default
+
+
+def save_setting(key, value):
+    try:
+        data = {}
+        if os.path.exists(SETTINGS_PATH):
+            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        data[key] = value
+        os.makedirs(os.path.dirname(SETTINGS_PATH), exist_ok=True)
+        with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"[vr_studio] could not save grab setting: {e}")
+
+
 def get_reach_cm():
     global _reach_cm
     if _reach_cm is None:
         _reach_cm = DEFAULT_CM
-        try:
-            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
-                v = json.load(f).get("grab_reach_cm", DEFAULT_CM)
-            if isinstance(v, (int, float)) and 0 <= v <= 30:
-                _reach_cm = v
-        except Exception:
-            pass
+        v = load_setting("grab_reach_cm", DEFAULT_CM)
+        if isinstance(v, (int, float)) and 0 <= v <= 30:
+            _reach_cm = v
     return _reach_cm
 
 
@@ -67,19 +85,32 @@ def set_reach_cm(cm, save=True):
     if not isinstance(cm, (int, float)) or cm < 0:
         return
     _reach_cm = round(cm, 2)
-    if not save:
-        return
-    try:
-        data = {}
-        if os.path.exists(SETTINGS_PATH):
-            with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        data["grab_reach_cm"] = _reach_cm
-        os.makedirs(os.path.dirname(SETTINGS_PATH), exist_ok=True)
-        with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-    except Exception as e:
-        print(f"[vr_studio] could not save grab setting: {e}")
+    if save:
+        save_setting("grab_reach_cm", _reach_cm)
+
+
+# Grab point offset from the grip pose, in the grip's own axes, real-world cm (scaled with the
+# world like the reach). (0, 0, 0) = the grip pose itself (v0.4 behaviour). Tuned in VR from the
+# GRAB panel, or by editing "grab_offset_cm" in ~/.freebird/vr_studio_settings.json.
+OFFSET_LIMIT_CM = 15
+_offset_cm = None
+
+
+def get_offset_cm():
+    global _offset_cm
+    if _offset_cm is None:
+        _offset_cm = (0.0, 0.0, 0.0)
+        v = load_setting("grab_offset_cm")
+        if isinstance(v, (list, tuple)) and len(v) == 3 and all(isinstance(c, (int, float)) for c in v):
+            _offset_cm = tuple(max(-OFFSET_LIMIT_CM, min(OFFSET_LIMIT_CM, float(c))) for c in v)
+    return _offset_cm
+
+
+def set_offset_cm(offset, save=True):
+    global _offset_cm
+    _offset_cm = tuple(round(max(-OFFSET_LIMIT_CM, min(OFFSET_LIMIT_CM, float(c))), 2) for c in offset)
+    if save:
+        save_setting("grab_offset_cm", list(_offset_cm))
 
 
 # -- geometry ----------------------------------------------------------------
@@ -180,10 +211,17 @@ def find_grab_target(center, reach, fallback_intersects):
 
 def grab_center():
     """Gravity Sketch style: the grab sphere sits on the hand (grip pose, around the middle
-    finger), not on the controller tip where Freebird's laser starts."""
+    finger), not on the controller tip where Freebird's laser starts. Moved by get_offset_cm()
+    (in the grip's axes); the sphere, grabbing, vertex grab and the proportional sphere all use this."""
     from bl_xr import xr_session
+    from mathutils import Vector
 
-    return xr_session.controller_main_grip_position
+    pos = xr_session.controller_main_grip_position
+    offset = get_offset_cm()
+    if not any(offset):
+        return pos
+    scale = float(xr_session.viewer_scale or 1.0) / 100.0
+    return pos + xr_session.controller_main_grip_rotation @ (Vector(offset) * scale)
 
 
 def edit_elements(active, reach):

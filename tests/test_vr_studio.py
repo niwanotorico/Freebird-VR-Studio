@@ -377,6 +377,8 @@ def run_ui():
     look.tiles[0].dispatch_event("pointer_main_press_end", None)
     assert look.last_message.startswith("Pen: ") and len(bpy.data.materials) == n, look.last_message
 
+    _check_controller_look_and_offset(area, vs, hit)
+
     # the plugin entry builds the same area with both sections
     import vr_studio
 
@@ -386,6 +388,103 @@ def run_ui():
     assert vr_studio._area.node.parent is None
     area.detach()
     print("=== VR STUDIO UI: PASS ===")
+
+
+def _check_controller_look_and_offset(area, vs, hit):
+    """VIEW: controller card Normal / See-through. GRAB: grab sphere offset. Settings go to a temp file."""
+    import json
+    import tempfile
+
+    from bl_xr import Image, root, xr_session
+    from mathutils import Quaternion, Vector
+
+    from vr_studio import controller_look, grab
+    from vr_studio.grab_section import GrabSection
+    from vr_studio.look_section import TILE
+
+    real_path = grab.SETTINGS_PATH
+    grab.SETTINGS_PATH = os.path.join(tempfile.mkdtemp(), "vr_studio_settings.json")
+    added = []
+    try:
+        # the cards may not exist in this test (Freebird's VR UI not enabled): stand-ins with the same ids
+        cards = {}
+        for node_id in controller_look.CARD_IDS:
+            node = root.q(f"#{node_id}")
+            if node is None:
+                node = Image(id=node_id, width=0.1, height=0.1, intersects=None)
+                root.append_child(node)
+                added.append(node)
+            cards[node_id] = node
+        main = cards["controller_main_bg"]
+        main.style["opacity"] = 0.7  # an inline value that must come back
+        controller_look._see_through = None
+        assert controller_look.get_see_through() is False
+
+        tile = vs.controller_tile
+        assert hit(tile, TILE) is tile
+        tile.dispatch_event("pointer_main_press_end", None)
+        assert vs.last_message == "Controller: See-through", vs.last_message
+        for node in cards.values():
+            assert node.get_computed_style("opacity") == 0.2 and node.get_computed_style("depth_test", True) is False
+        assert tile.current and vs.controller_state.text == "See"
+        assert json.load(open(grab.SETTINGS_PATH))["controller_see_through"] is True
+        # left-handed switch swaps the textures between the cards, the look stays on both
+        controller_look.apply()
+        assert all(n.style["opacity"] == 0.2 for n in cards.values())
+        tile.dispatch_event("pointer_main_press_end", None)
+        assert vs.last_message == "Controller: Normal" and not tile.current
+        assert main.style["opacity"] == 0.7 and "depth_test" not in main.style
+        assert all("opacity" not in n.style for n in added if n is not main)
+        # no cards at all: nothing happens, no error
+        for node in added:
+            root.remove_child(node)
+        assert controller_look.set_see_through(True, save=False) == 0
+        controller_look.set_see_through(False, save=False)
+
+        # GRAB offset: 0 = the grip pose, as before
+        gs = area.add(GrabSection())
+        grab._offset_cm = None
+        assert grab.get_offset_cm() == (0.0, 0.0, 0.0)
+        grip = Vector((1.0, 2.0, 3.0))
+        rot = Quaternion((0, 0, 1), 1.5707963)  # 90 degrees about Z: grip X -> world Y
+        cls = type(xr_session)
+        saved_props = {k: cls.__dict__[k] for k in ("controller_main_grip_position", "controller_main_grip_rotation",
+                                                      "viewer_scale")}
+        cls.controller_main_grip_position = property(lambda self: grip.copy())
+        cls.controller_main_grip_rotation = property(lambda self: rot.copy())
+        cls.viewer_scale = property(lambda self: 10.0)
+        try:
+            assert (grab.grab_center() - grip).length < 1e-6
+            axis, minus, plus, zero = gs.offset_tiles
+            plus.dispatch_event("pointer_main_press_end", None)
+            plus.dispatch_event("pointer_main_press_end", None)  # X +1 cm
+            axis.dispatch_event("pointer_main_press_end", None)
+            axis.dispatch_event("pointer_main_press_end", None)
+            minus.dispatch_event("pointer_main_press_end", None)  # Z -0.5 cm
+            assert grab.get_offset_cm() == (1.0, 0.0, -0.5), grab.get_offset_cm()
+            assert gs.last_message == "Z axis: x+1.0 y+0.0 z-0.5 cm", gs.last_message
+            assert json.load(open(grab.SETTINGS_PATH))["grab_offset_cm"] == [1.0, 0.0, -0.5]
+            # world scale 10: 1 cm on grip X -> 0.1 along world Y, -0.5 cm on Z -> -0.05
+            d = grab.grab_center() - grip
+            assert (d - Vector((0.0, 0.1, -0.05))).length < 1e-5, d
+            grab._offset_cm = None  # read back from the file
+            assert grab.get_offset_cm() == (1.0, 0.0, -0.5)
+            area._refresh()
+            zero.dispatch_event("pointer_main_press_end", None)
+            assert grab.get_offset_cm() == (0.0, 0.0, 0.0) and (grab.grab_center() - grip).length < 1e-6
+            grab.set_offset_cm((99, -99, 0), save=False)
+            assert grab.get_offset_cm() == (15.0, -15.0, 0.0)  # clamped
+            grab.set_offset_cm((0, 0, 0), save=False)
+        finally:
+            for k, v in saved_props.items():
+                setattr(cls, k, v)
+    finally:
+        for node in added:
+            if node.parent is not None:
+                node.parent.remove_child(node)
+        grab.SETTINGS_PATH = real_path
+        controller_look._see_through = None
+        grab._offset_cm = None
 
 
 def _check_fb_info():

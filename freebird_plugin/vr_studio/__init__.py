@@ -15,10 +15,14 @@ area, right next to the main menu on the left hand (on the side Freebird's sub-m
            colour keeps the Look.
     VIEW   the headset's shading: Wireframe / Solid / Material Preview / Rendered.
            Only this person's view (never synced to the collab room).
+           Controller: Normal / See-through (Freebird's controller card faint and drawn without
+           depth, so the grab sphere and things behind it show through). Also just you.
     GRAB   Gravity Sketch style grab: a sphere on your hand (middle finger), always shown,
            red when a squeeze would grab. Reach OFF (Freebird's 1 cm tip) / 3 / 5 / 8 cm.
            Everything the sphere touches is grabbed together and stays selected after you let
            go (hand deep inside a big object grabs that one). Just you (LOCAL).
+           Offset row (Axis / - / + / Reset, 0.5 cm steps) moves the sphere on the hand, to put
+           it on the middle finger; grabbing, vertex grab and the proportional sphere follow.
     DELETE squeeze to hold something + B = delete it (Gravity Sketch). Empty hand + B is
            Freebird's quick tools as before. Undo brings it back.
     COPY   squeeze to hold something + trigger = duplicate it (Freebird's clone; the copy stays
@@ -98,6 +102,16 @@ def _toggler(button_id):
 def _on_xr_start(self, event_name, event):
     _build().attach()  # sections stay hidden until their button is pressed
     _grab_sphere(True)
+    _controller_look()
+
+
+def _controller_look(restore=False):
+    try:
+        from . import controller_look
+
+        controller_look.restore() if restore else controller_look.apply()
+    except Exception as e:
+        print(f"[vr_studio] controller look: {e}")
 
 
 def _grab_sphere(state):
@@ -145,6 +159,7 @@ def register():
         if xr_session.is_running:  # plugin (re)loaded while already in VR
             _build().attach()
             _grab_sphere(True)
+            _controller_look()
     except Exception:
         pass
 
@@ -165,6 +180,7 @@ def unregister():
         grab.hide_sphere()
     except Exception:
         pass
+    _controller_look(restore=True)
     if _area is not None:
         _area.detach()
     _area = None
