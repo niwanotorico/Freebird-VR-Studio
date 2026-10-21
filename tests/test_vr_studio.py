@@ -441,10 +441,11 @@ def _check_controller_look_and_offset(area, vs, hit):
         assert controller_look.set_see_through(True, save=False) == 0
         controller_look.set_see_through(False, save=False)
 
-        # GRAB offset: 0 = the grip pose, as before
+        # GRAB offset: nothing saved -> the middle-finger default; 0 = the grip pose, as before
         gs = area.add(GrabSection())
         grab._offset_cm = None
-        assert grab.get_offset_cm() == (0.0, 0.0, 0.0)
+        assert grab.get_offset_cm() == grab.DEFAULT_OFFSET_CM == (-1.5, 2.0, -0.5)
+        grab.set_offset_cm((0, 0, 0), save=False)
         grip = Vector((1.0, 2.0, 3.0))
         rot = Quaternion((0, 0, 1), 1.5707963)  # 90 degrees about Z: grip X -> world Y
         cls = type(xr_session)
@@ -469,9 +470,14 @@ def _check_controller_look_and_offset(area, vs, hit):
             assert (d - Vector((0.0, 0.1, -0.05))).length < 1e-5, d
             grab._offset_cm = None  # read back from the file
             assert grab.get_offset_cm() == (1.0, 0.0, -0.5)
-            area._refresh()
-            zero.dispatch_event("pointer_main_press_end", None)
-            assert grab.get_offset_cm() == (0.0, 0.0, 0.0) and (grab.grab_center() - grip).length < 1e-6
+            gs.refresh(None)
+            assert not zero.current
+            zero.dispatch_event("pointer_main_press_end", None)  # Reset = the default, not 0
+            assert grab.get_offset_cm() == (-1.5, 2.0, -0.5)
+            d = grab.grab_center() - grip  # grip X -> world Y, grip Y -> world -X, Z stays
+            assert (d - Vector((-0.2, -0.15, -0.05))).length < 1e-5, d
+            gs.refresh(None)
+            assert zero.current
             grab.set_offset_cm((99, -99, 0), save=False)
             assert grab.get_offset_cm() == (15.0, -15.0, 0.0)  # clamped
             grab.set_offset_cm((0, 0, 0), save=False)

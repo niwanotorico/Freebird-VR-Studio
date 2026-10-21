@@ -90,8 +90,10 @@ def set_reach_cm(cm, save=True):
 
 
 # Grab point offset from the grip pose, in the grip's own axes, real-world cm (scaled with the
-# world like the reach). (0, 0, 0) = the grip pose itself (v0.4 behaviour). Tuned in VR from the
-# GRAB panel, or by editing "grab_offset_cm" in ~/.freebird/vr_studio_settings.json.
+# world like the reach). (0, 0, 0) = the grip pose itself (v0.4 behaviour). The default puts the
+# sphere on the middle finger (checked on the headset); a saved value wins. Tuned in VR from the
+# GRAB panel (Reset = default), or by editing "grab_offset_cm" in ~/.freebird/vr_studio_settings.json.
+DEFAULT_OFFSET_CM = (-1.5, 2.0, -0.5)
 OFFSET_LIMIT_CM = 15
 _offset_cm = None
 
@@ -99,7 +101,7 @@ _offset_cm = None
 def get_offset_cm():
     global _offset_cm
     if _offset_cm is None:
-        _offset_cm = (0.0, 0.0, 0.0)
+        _offset_cm = DEFAULT_OFFSET_CM
         v = load_setting("grab_offset_cm")
         if isinstance(v, (list, tuple)) and len(v) == 3 and all(isinstance(c, (int, float)) for c in v):
             _offset_cm = tuple(max(-OFFSET_LIMIT_CM, min(OFFSET_LIMIT_CM, float(c))) for c in v)

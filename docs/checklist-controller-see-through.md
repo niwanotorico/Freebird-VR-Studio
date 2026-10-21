@@ -23,7 +23,7 @@
 - [ ] Collabo の部屋に入っている時：相手側の見た目は何も変わらない（同期されない）
 
 ## 2. 掴み球オフセット（GRAB 上段）
-初期値は 0（＝v0.4 と同じ、grip 姿勢の原点）。
+（確認時の初期値は 0＝grip 姿勢の原点。確認後、初期値と Reset は x-1.5 y+2.0 z-0.5 cm に変更。保存済みの値があればそちらが優先）
 
 - [ ] 最初は Reset タイルが選択状態（青枠）、球は今まで通りの位置
 - [ ] Axis（X）を押すたびに X → Y → Z → X と切り替わる
@@ -48,6 +48,11 @@
 8. Reset を押すと球が元の位置に戻る
 
 ## 3. 異常時
-- 何か変になったら VIEW → Controller を Normal、GRAB → Reset で元の挙動に戻る
+- 何か変になったら VIEW → Controller を Normal、GRAB → Reset で初期値（中指の位置）に戻る
 - 値は `~/.freebird/vr_studio_settings.json` を直接編集しても変えられる（Blender 再起動で反映）
 - ログ：`~/.freebird/vr_studio_debug.log`（オフセット変更が `grab offset -> (...)` で記録される）
+
+## 4. 実機確認の結果（2026-10-21、OK）
+- See-through：掴み球・奥の物ともに見える。違和感なし
+- オフセット：x -1.5 / y +2.0 / z -0.5 cm で中指の位置に合った
+  → この値を初期値（Reset の戻り先）に採用

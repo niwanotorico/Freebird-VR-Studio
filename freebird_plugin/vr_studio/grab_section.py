@@ -20,7 +20,7 @@ OFFSET_STEP_CM = 0.5
 OFFSET_TILES = (("axis", "X", "Axis", "Sphere offset: pick the axis X / Y / Z"),
                 ("minus", "-", "-0.5 cm", "Move the sphere -0.5 cm along the axis"),
                 ("plus", "+", "+0.5 cm", "Move the sphere +0.5 cm along the axis"),
-                ("zero", "0", "Reset", "Sphere back on the grip (offset 0)"))
+                ("zero", "0", "Reset", "Sphere back on the middle finger (default offset)"))
 
 
 def offset_text(offset):
@@ -90,7 +90,7 @@ class GrabSection(StudioSection):
             self.axis = (self.axis + 1) % len(AXES)
             self.axis_text.text = AXES[self.axis]
         elif action == "zero":
-            offset = [0.0, 0.0, 0.0]
+            offset = list(grab.DEFAULT_OFFSET_CM)
         else:
             offset[self.axis] += OFFSET_STEP_CM if action == "plus" else -OFFSET_STEP_CM
         if action != "axis":
@@ -104,7 +104,7 @@ class GrabSection(StudioSection):
         for t in self.tiles:  # the stick sets any size: mark the closest preset
             t.set_current(t is nearest)
         offset = grab.get_offset_cm()
-        self.offset_tiles[3].set_current(not any(offset))
+        self.offset_tiles[3].set_current(tuple(offset) == tuple(grab.DEFAULT_OFFSET_CM))
         if cm and self.status.text == self.last_message:
             message = f"Reach {cm:.1f} cm (stick up/down)"
             if any(offset):
