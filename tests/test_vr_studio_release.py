@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """
 Release test for the VR Studio zip (Blender add-on that installs the Freebird plugin).
-Every scenario runs in fresh Blender processes with HOME pointing at an empty fake user folder,
-so the Blender add-ons folder and ~/.freebird are brand new and the dev checkout is never used.
+Every scenario runs in fresh Blender processes (blender --background --python) with HOME /
+USERPROFILE / APPDATA pointing at an empty fake user folder, so the Blender add-ons folder,
+the user preferences and ~/.freebird are brand new and the dev checkout is never used.
 
-    FREEBIRD_XR_DIR=<...>/scripts/addons/freebird_xr python3 tests/test_vr_studio_release.py [zip]
-        (default: builds the zip with tools/build_vr_studio_release.py)
+    FREEBIRD_XR_DIR=<...>/scripts/addons/freebird_xr python3 tests/test_vr_studio_release.py [--blender PATH] [zip]
+        Blender: --blender PATH, else $BLENDER, else the Blender running this script
+        (blender --background --python tests/blender_runner.py -- tests/test_vr_studio_release.py).
+        zip: default builds it with tools/build_vr_studio_release.py
 
  layout   zip = one add-on folder: __init__.py + payload/vr_studio (plugin only) + README/LICENSE
  fresh    Install from Disk + enable on a PC without VR Studio (and without ~/.freebird)
@@ -270,15 +273,17 @@ ORDER = [["fresh_install", "fresh_restart"], ["live"], ["update_modified_same_ve
          ["keep_newer"], ["swap_failure_restores"], ["disable_keeps_plugin"], ["remove_plugin"]]
 
 
-def run_group(names, zip_path, fb):
+def run_group(names, zip_path, fb, blender):
     tmp = tempfile.mkdtemp(prefix="vrs_rel_")
     try:
         home = os.path.join(tmp, "home")
         os.makedirs(os.path.join(home, "Downloads"))
         zcopy = os.path.join(home, "Downloads", os.path.basename(zip_path))
         shutil.copy(zip_path, zcopy)  # the user's download; deleted before a "restart"
-        env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "BLENDER_USER_SCRIPTS")}
-        env.update(HOME=home, USERPROFILE=home, T_FB=fb, T_HOME=home, T_ZIP=zcopy,
+        env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONHOME") and not k.startswith("BLENDER_USER")}
+        appdata = os.path.join(home, "AppData", "Roaming")  # Blender's user folder on Windows
+        os.makedirs(appdata)
+        env.update(HOME=home, USERPROFILE=home, APPDATA=appdata, T_FB=fb, T_HOME=home, T_ZIP=zcopy,
                    T_DEV=os.pathsep.join([ROOT] + [p for p in os.environ.get("VRS_DEV_COPIES", "").split(os.pathsep) if p]))
         for i, name in enumerate(names):
             if i > 0:
@@ -286,7 +291,9 @@ def run_group(names, zip_path, fb):
             script = os.path.join(tmp, f"{name}.py")
             with open(script, "w", encoding="utf-8") as f:
                 f.write(PRELUDE + textwrap.dedent(SCENARIOS[name]) + '\nprint("<<OK>>")\n')
-            r = subprocess.run([sys.executable, script], cwd=tmp, env=env, capture_output=True, text=True, timeout=300)
+            cmd = [blender, "--background", "--python-exit-code", "1", "--python", script]
+            r = subprocess.run(cmd, cwd=tmp, env=env, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=300)
             ok = r.returncode == 0 and "<<OK>>" in r.stdout
             lines = [l for l in r.stdout.splitlines() if l.startswith("  ")]
             print(f"[{'PASS' if ok else 'FAIL'}] {name}")
@@ -300,19 +307,42 @@ def run_group(names, zip_path, fb):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def _blender(args):
+    """--blender PATH, else $BLENDER, else the Blender running this script."""
+    path = None
+    if "--blender" in args:
+        i = args.index("--blender")
+        path = args[i + 1]
+        del args[i:i + 2]
+    path = path or os.environ.get("BLENDER")
+    if not path:
+        try:
+            import bpy
+
+            path = bpy.app.binary_path
+        except ImportError:
+            pass
+    if not path or not os.path.isfile(path):
+        raise SystemExit("Blender not found: pass --blender PATH or set BLENDER to blender(.exe)")
+    return path
+
+
 def main():
     fb = os.environ.get("FREEBIRD_XR_DIR")
     if not fb or not os.path.isdir(os.path.join(fb, "freebird")):
         raise SystemExit("set FREEBIRD_XR_DIR to Freebird's freebird_xr folder")
-    if len(sys.argv) > 1:
-        zip_path = os.path.abspath(sys.argv[1])
+    args = sys.argv[1:]
+    blender = _blender(args)
+    print("Blender:", blender)
+    if args:
+        zip_path = os.path.abspath(args[0])
     else:
         sys.path.insert(0, os.path.join(ROOT, "tools"))
         import build_vr_studio_release
 
         zip_path = build_vr_studio_release.build()
     check_zip(zip_path)
-    ok = all([run_group(g, zip_path, fb) for g in ORDER])
+    ok = all([run_group(g, zip_path, fb, blender) for g in ORDER])
     print("=== VR STUDIO RELEASE:", "PASS ===" if ok else "FAIL ===")
     sys.exit(0 if ok else 1)
 
