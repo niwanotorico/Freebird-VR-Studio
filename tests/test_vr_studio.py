@@ -45,6 +45,10 @@ def run_unit():
     assert len(palette.PALETTE) == 32 and len(palette.swatches()) == 32
     assert _r3(_lin("#FFFFFF")) == (1.0, 1.0, 1.0) and _r3(_lin("#000000")) == (0.0, 0.0, 0.0)
     assert abs(palette.srgb_to_linear((0.5,))[0] - 0.214) < 0.001, "sRGB -> linear"
+    # Picker: linear -> sRGB is the inverse, hex for the readout
+    for c in ((0.0, 0.5, 1.0), (0.002, 0.2, 0.8)):
+        assert _r3(palette.linear_to_srgb(palette.srgb_to_linear(c))) == _r3(c)
+    assert palette.srgb_hex((1.0, 0.5, 0.0)) == "#FF8000" and palette.srgb_hex((2.0, -1.0, 0.0, 1.0)) == "#FF0000"
 
     red, blue, green = _lin("#E53935"), _lin("#1E88E5"), _lin("#43A047")
     cube = bpy.data.objects["Cube"]
@@ -378,12 +382,13 @@ def run_ui():
     assert look.last_message.startswith("Pen: ") and len(bpy.data.materials) == n, look.last_message
 
     _check_controller_look_and_offset(area, vs, hit)
+    _check_picker(area, hit)
 
     # the plugin entry builds the same area with both sections
     import vr_studio
 
     vr_studio._on_xr_start(None, "fb.xr_start", None)
-    assert set(vr_studio._sections) == {"color", "look", "view", "grab", "edit", "play"} and vr_studio._area.node.parent is bl_xr.root
+    assert set(vr_studio._sections) == {"color", "picker", "look", "view", "grab", "edit", "play"} and vr_studio._area.node.parent is bl_xr.root
     vr_studio._on_xr_end(None, "fb.xr_end", None)
     assert vr_studio._area.node.parent is None
     area.detach()
@@ -491,6 +496,78 @@ def _check_controller_look_and_offset(area, vs, hit):
         grab.SETTINGS_PATH = real_path
         controller_look._see_through = None
         grab._offset_cm = None
+
+
+def _check_picker(area, hit):
+    """PICKER: saturation strip, hue x lightness map (laser drag), eyedropper. Colours selection + pen."""
+    import bpy
+    from mathutils import Vector
+
+    from vr_studio import brush, picker_section
+    from vr_studio.look_section import TILE
+    from vr_studio.palette import srgb_to_linear
+    from vr_studio.picker_section import L_MAX, L_MIN, STEPS, PickerSection
+
+    ps = area.add(PickerSection())
+    area.toggle(ps)
+    assert len(ps.strip) == STEPS and ps.hex_text.text == "#FF0000"  # starts at pure red
+    assert hit(ps.paint_tile, TILE) is ps.paint_tile and hit(ps.pick_tile, TILE) is ps.pick_tile
+    cube = bpy.data.objects["Cube"]
+    for ob in bpy.context.view_layer.objects:
+        ob.select_set(ob == cube)
+
+    # strip: 0 % saturation = grey, applied to the selection, its object colour and the pen
+    ps.strip[0].dispatch_event("pointer_main_press_end", None)
+    grey = srgb_to_linear((0.5, 0.5, 0.5))
+    assert ps.hex_text.text == "#808080" and _base(cube.material_slots[0].material) == _r3((*grey, 1.0))
+    assert _r3(cube.color[:3]) == _r3(grey) and brush.state["color_name"] == "#808080"
+    assert ps.last_message.startswith("1 object"), ps.last_message
+    assert ps.strip[0].current and not ps.strip[-1].current
+
+    # map: pull the trigger at (u, v) and let go -> hue u, lightness v; coming from grey = full colour
+    u, v = 0.5, 0.75
+    m = ps.map
+    point = ps.node.position + ps.body.position + m.position + Vector((u * m.w, v * m.h, 0.0))
+    real = area._pointer_local
+    area._pointer_local = lambda: point.copy()
+    try:
+        m.dispatch_event("pointer_main_press_start", None)
+        assert ps.dragging
+        m.dispatch_event("pointer_main_press_end", None)
+    finally:
+        area._pointer_local = real
+    assert not ps.dragging and abs(ps.h - u) < 1e-6 and abs(ps.l - (L_MIN + (L_MAX - L_MIN) * v)) < 1e-6 and ps.s == 1.0
+    lin = srgb_to_linear(ps.srgb())
+    assert _base(cube.material_slots[0].material) == _r3((*lin, 1.0)) and brush.state["color"] == tuple(lin)
+
+    # eyedropper: Pick, then the touched object's colour becomes the current colour + pen (selection unchanged)
+    target = bpy.data.objects.new("PickMe", bpy.data.curves.new("PickMe", "CURVE"))
+    bpy.context.scene.collection.objects.link(target)
+    target.color = (*srgb_to_linear((0.2, 0.4, 0.6)), 1.0)
+    assert _r3(picker_section.object_color(target)) == _r3(target.color[:3])  # no material: object colour
+    before = _base(cube.material_slots[0].material)
+    real_touch = picker_section.touched_object
+    touching = [None]
+    picker_section.touched_object = lambda: touching[0]
+    try:
+        ps.pick_tile.dispatch_event("pointer_main_press_end", None)
+        assert ps.picking and ps.pick_tile.current
+        ps.tick()  # touching nothing: still picking
+        assert ps.picking
+        touching[0] = target
+        ps.tick()
+    finally:
+        picker_section.touched_object = real_touch
+    assert not ps.picking and not ps.pick_tile.current
+    assert ps.hex_text.text == "#336699" and brush.state["color_name"] == "#336699", ps.hex_text.text
+    assert ps.last_message.startswith("Picked #336699"), ps.last_message
+    assert _base(cube.material_slots[0].material) == before  # picking alone paints nothing
+    ps.paint_tile.dispatch_event("pointer_main_press_end", None)  # Paint = colour the selection with it
+    assert _base(cube.material_slots[0].material) == _r3((*srgb_to_linear((0.2, 0.4, 0.6)), 1.0))
+    # a material's colour wins over the object colour
+    assert _r3(picker_section.object_color(cube)) == _r3(srgb_to_linear((0.2, 0.4, 0.6)))
+    bpy.data.objects.remove(target)
+    area.toggle(ps)
 
 
 def _check_fb_info():

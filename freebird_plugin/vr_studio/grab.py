@@ -336,8 +336,11 @@ def _make_sphere():
                     _select_last_held()
                 _session["started"] = _session["on_object"] = False
                 _session["last_held"] = []
+                _session["cloned"] = []
             else:
                 names = [o.name for o in held_objects()]
+                if _session.get("cloned"):  # after a clone the copies are what you hold (and select)
+                    names = [n for n in _session["cloned"] if n in bpy.data.objects]
                 if names:
                     _session["last_held"] = names
             ensure_b_hook()
@@ -595,7 +598,7 @@ def _grab_query(intersections, orig, pointer_location):
 # -- squeeze + B = delete (Gravity Sketch) ------------------------------------
 # Freebird uses B (main hand) for its quick tools. While you hold something with the grip,
 # B deletes what you hold instead; with empty hands B is Freebird's quick tools as before.
-_session = {"started": False, "on_object": False, "last_held": []}
+_session = {"started": False, "on_object": False, "last_held": [], "cloned": []}
 
 
 _reselect = {"names": [], "frames": 0}
@@ -906,6 +909,7 @@ def _clone_all(held):
         c.select_set(True)
         copies.append(c)
     bpy.context.view_layer.objects.active = copies[0]
+    _session["cloned"] = [c.name for c in copies]  # selected on release (not the originals)
     try:
         from freebird.tools import clone
 

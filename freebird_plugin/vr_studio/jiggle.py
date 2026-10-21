@@ -478,3 +478,6 @@ def _write(ob, frame, g, wob, squish, full=True):
             set_input(md, ident, value)
     set_input(md, _sock("Wobble"), wob)
     set_input(md, _sock("Squish"), squish)
+    # Blender 5: setting a Geometry Nodes input this way does not always re-evaluate the mesh
+    # (a group member that is not moving itself kept its old shape). Ask for it explicitly.
+    ob.update_tag(refresh={"DATA"})

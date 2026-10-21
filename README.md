@@ -15,6 +15,7 @@ material look, and switch how the scene is shaded — all with one press of the 
 | Button | What it does |
 |---|---|
 | **Color** | 32-colour palette. Select objects, point at a colour, pull the trigger. |
+| **Picker** | Any colour: hue × lightness map + saturation strip. **Pick** = eyedropper (touch something with the grab sphere to take its colour). |
 | **Look** | 8 material looks: Clay, Matte, Glossy, Plastic, Metallic, Glass, Emission, Toon. Independent of Color. |
 | **View** | Switches how *your headset* shows the scene: Wireframe / Solid / Material Preview / Rendered. Overlays on / off, Controller Normal / See-through (faint controllers, so the grab sphere and what is behind them stay visible). |
 | **Grab** | Gravity Sketch style grab: a sphere on your middle finger grabs what it touches (reach Off / 3 / 5 / 8 cm). Squeeze + B deletes, squeeze + trigger duplicates, left X groups. The sphere's position on the hand can be fine-tuned in 0.5 cm steps. |
@@ -27,7 +28,7 @@ Freebird's own Undo / Redo cover Color and Look.
 
 Download `vr_studio-v<version>.zip` from [Releases](https://github.com/niwanotorico/Freebird-VR-Studio/releases)
 and install it like any Blender add-on (**Edit › Preferences › Add-ons › ⌄ › Install from Disk…**, don't unzip).
-The add-on sets the plugin up for Freebird XR; then open the Freebird menu in VR → **Plugins** → Color / Look / View / Grab / Edit / Pudding.
+The add-on sets the plugin up for Freebird XR; then open the Freebird menu in VR → **Plugins** → Color / Picker / Look / View / Grab / Edit / Pudding.
 
 Full instructions, updating and uninstalling: [release/vr_studio/README.md](release/vr_studio/README.md).
 
@@ -38,6 +39,7 @@ Requirements: Blender 5.2 (tested; 4.2+ expected to work), Freebird XR 2.15.0 or
 VR Studio works on its own. Together with [FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo)
 (shown as *Freebird Collaboration Layer* in Blender's add-on list), Color / Look changes reach everyone in
 the room through its material sync. View is never shared.
+Known limitation: Picker's object colour (Solid view's "Object" colour) does not sync to the room; the material colour does.
 
 ## Repository layout
 

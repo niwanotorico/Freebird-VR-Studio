@@ -15,6 +15,7 @@ Freebird の VR メニューの横に小さなパネルエリアを追加し、�
 | ボタン | 内容 |
 |---|---|
 | **Color** | 32 色パレット。オブジェクトを選んで、色を指してトリガーを引くだけ。 |
+| **Picker** | 好きな色を作れる：色相×明るさのマップ＋彩度の列。**Pick** はスポイト（掴み球で触れたものの色を取る）。 |
 | **Look** | 8 種類の質感：Clay / Matte / Glossy / Plastic / Metallic / Glass / Emission / Toon。Color とは独立。 |
 | **View** | **自分のヘッドセット**の表示を切り替え：Wireframe / Solid / Material Preview / Rendered。Overlay のオン/オフ、コントローラーの通常／透け（コントローラーを薄くして、掴み球や奥の物が見えるようにする）。 |
 | **Grab** | Gravity Sketch 風のつかみ。中指の球が触れたものをつかむ（届く距離 Off / 3 / 5 / 8 cm）。握って B で削除、握ってトリガーで複製、左 X でグループ化。手に対する球の位置は 0.5 cm 刻みで微調整できる。 |
@@ -27,7 +28,7 @@ Color と Look は Freebird 標準の Undo / Redo で戻せます。
 
 [Releases](https://github.com/niwanotorico/Freebird-VR-Studio/releases) から `vr_studio-v<バージョン>.zip` をダウンロードし、
 普通の Blender アドオンと同じように入れます（**Edit › Preferences › Add-ons › ⌄ › Install from Disk…**。zip は解凍しない）。
-アドオンが Freebird XR 用にプラグインを配置するので、VR で Freebird メニュー → **Plugins** → Color / Look / View / Grab / Edit / Pudding を開きます。
+アドオンが Freebird XR 用にプラグインを配置するので、VR で Freebird メニュー → **Plugins** → Color / Picker / Look / View / Grab / Edit / Pudding を開きます。
 
 詳しい手順・更新・アンインストール（英語）：[release/vr_studio/README.md](release/vr_studio/README.md)
 
@@ -37,6 +38,7 @@ Color と Look は Freebird 標準の Undo / Redo で戻せます。
 
 VR Studio は単体で動きます。[FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo) と併用すると、
 Color / Look の変更はそのマテリアル同期で部屋の全員に届きます。View は共有されません（各自の表示のまま）。
+既知の制限：Picker のオブジェクト色は部屋に同期しません（マテリアル色は同期します）。
 
 ## リポジトリ構成
 
