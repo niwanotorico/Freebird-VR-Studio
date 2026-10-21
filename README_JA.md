@@ -16,7 +16,10 @@ Freebird の VR メニューの横に小さなパネルエリアを追加し、�
 |---|---|
 | **Color** | 32 色パレット。オブジェクトを選んで、色を指してトリガーを引くだけ。 |
 | **Look** | 8 種類の質感：Clay / Matte / Glossy / Plastic / Metallic / Glass / Emission / Toon。Color とは独立。 |
-| **View** | **自分のヘッドセット**の表示を切り替え：Wireframe / Solid / Material Preview / Rendered。 |
+| **View** | **自分のヘッドセット**の表示を切り替え：Wireframe / Solid / Material Preview / Rendered。Overlay のオン/オフ、コントローラーの通常／透け（コントローラーを薄くして、掴み球や奥の物が見えるようにする）。 |
+| **Grab** | Gravity Sketch 風のつかみ。中指の球が触れたものをつかむ（届く距離 Off / 3 / 5 / 8 cm）。握って B で削除、握ってトリガーで複製、左 X でグループ化。手に対する球の位置は 0.5 cm 刻みで微調整できる。 |
+| **Edit** | Object / Edit / Pose Mode、Vert / Edge / Face、プロポーショナル編集。Edit Mode では球で頂点をつかむ。 |
+| **Pudding** | ものをぷるぷる揺らす：Off / Soft / Wobbly / Jelly。**New** で手元にプリンを出す。 |
 
 Color と Look は Freebird 標準の Undo / Redo で戻せます。
 
@@ -24,7 +27,7 @@ Color と Look は Freebird 標準の Undo / Redo で戻せます。
 
 [Releases](https://github.com/niwanotorico/Freebird-VR-Studio/releases) から `vr_studio-v<バージョン>.zip` をダウンロードし、
 普通の Blender アドオンと同じように入れます（**Edit › Preferences › Add-ons › ⌄ › Install from Disk…**。zip は解凍しない）。
-アドオンが Freebird XR 用にプラグインを配置するので、VR で Freebird メニュー → **Plugins** → Color / Look / View を開きます。
+アドオンが Freebird XR 用にプラグインを配置するので、VR で Freebird メニュー → **Plugins** → Color / Look / View / Grab / Edit / Pudding を開きます。
 
 詳しい手順・更新・アンインストール（英語）：[release/vr_studio/README.md](release/vr_studio/README.md)
 

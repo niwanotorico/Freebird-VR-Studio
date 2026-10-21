@@ -7,7 +7,7 @@ import os
 import bpy
 from mathutils import Vector
 
-from . import materials
+from . import brush, materials
 from .area import StudioSection, Tile
 from .color_section import WIDTH
 from .looks import LOOK_NAMES
@@ -23,6 +23,7 @@ ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
 
 class LookSection(StudioSection):
     title = "LOOK"
+    scope = "GLOBAL"
     idle_message = "Select, then pick a look"
 
     def __init__(self):
@@ -46,13 +47,16 @@ class LookSection(StudioSection):
 
     def press(self, tile):
         try:
+            brush.set_look(tile.look)  # what you draw next gets this look
             targets = materials.selected_targets(bpy.context)
             report = materials.apply_look(targets, tile.look)
             if report["objects"]:
                 bpy.ops.ed.undo_push(message=f"VR look {tile.look}")
                 for t in self.tiles:
                     t.set_current(t is tile)
-            message = materials.describe(report)
+            message = materials.describe(report) if report["objects"] else f"Pen: {tile.look}"
+            for t in self.tiles:
+                t.set_current(t is tile)
             if report["objects"] and tile.look == "Toon":
                 message += " (Material Preview)"
             print(f"[vr_studio] look {tile.look}: {report}")
@@ -64,6 +68,6 @@ class LookSection(StudioSection):
         self.finish(message)
 
     def refresh(self, mat):
-        look = materials.detect_look(mat)
+        look = materials.detect_look(mat) if mat is not None else brush.state["look"]
         for t in self.tiles:
             t.set_current(t.look == look)

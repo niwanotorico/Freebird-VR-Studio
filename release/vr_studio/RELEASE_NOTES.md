@@ -1,4 +1,4 @@
-# VR Studio v@VERSION@ — first public build (alpha)
+# VR Studio v@VERSION@ — Grab / Edit / Pudding (alpha)
 
 **Tag:** `vr-studio-v@VERSION@` · **Pre-release** · Asset: `vr_studio-v@VERSION@.zip`
 
@@ -11,7 +11,7 @@ scene from inside VR with one trigger press. It is a separate download from the
 1. Download **`vr_studio-v@VERSION@.zip`** below — don't unzip it.
 2. Blender → **Edit › Preferences › Add-ons › ⌄ › Install from Disk…** → pick the zip → make sure
    **VR Studio for Freebird XR** is enabled.
-3. Start VR → Freebird menu → **Plugins** → **Color / Look / View** (restart Blender once if they're not there yet).
+3. Start VR → Freebird menu → **Plugins** → **Color / Look / View / Grab / Edit / Pudding** (restart Blender once if they're not there yet).
 
 The add-on only sets up the plugin for Freebird XR (install / update / remove). Updating = installing a
 newer zip the same way; the old plugin is backed up to `~/.freebird/plugin_backups/` first.
@@ -21,6 +21,21 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 
 - **Blender 5.2** (tested). Blender 4.2+ expected to work, not yet tested.
 - **Freebird XR 2.15.0** or newer.
+
+## New in v0.4
+
+- **Grab** — Gravity Sketch style grab: a sphere on your middle finger (reach Off / 3 / 5 / 8 cm) grabs
+  everything it touches; touched / held things get a red outline. Squeeze + B = delete, squeeze + trigger = duplicate.
+  The sphere's position on your hand can be fine-tuned in 0.5 cm steps (Axis / - / + / Reset).
+- **Buttons** — B = undo, A = Color panel, left X tap = group / ungroup, right stick = grab sphere size.
+- **Groups** — grabbing a member grabs the whole group; Color / Look colour every member.
+- **Edit** — Object / Edit / Pose Mode, Vert / Edge / Face, proportional editing. In Edit Mode the grab sphere grabs vertices.
+- **Pudding** — make things jiggle like a pudding (Off / Soft / Wobbly / Jelly), and **New** puts a pudding
+  in your hand. Move it or bump it and it wobbles. The mesh itself is not changed.
+- **Pen** — the colour and look you pick are also what you draw next (works with nothing selected).
+- **View** — Overlays on / off; heavy modes are shown in amber. **Controller: Normal / See-through** makes
+  Freebird's controller cards faint, so the grab sphere and what is behind them stay visible (just you).
+- Panel headers show **GLOBAL** (synced to the room) or **LOCAL** (just you).
 
 ## Features
 

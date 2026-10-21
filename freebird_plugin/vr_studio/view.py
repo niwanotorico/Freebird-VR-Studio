@@ -19,8 +19,8 @@ MODES = [
     # shading.type, tile label, hover text
     ("WIREFRAME", "Wire", "Wireframe"),
     ("SOLID", "Solid", "Solid"),
-    ("MATERIAL", "Material", "Material Preview"),
-    ("RENDERED", "Rendered", "Rendered"),
+    ("MATERIAL", "Material", "Material Preview - heavy in VR"),
+    ("RENDERED", "Rendered", "Rendered - very heavy in VR"),
 ]
 
 
@@ -42,3 +42,35 @@ def set_vr_shading(mode, context=None):
         raise RuntimeError("no XR session settings")
     shading.type = mode
     return (context or bpy.context).scene.render.engine if mode == "RENDERED" else None
+
+
+# -- VR overlays (floor grid, selection outlines, empties / lights / cameras, annotations) ------
+# Freebird's and VR Studio's own VR UI are "custom overlays": never touched here.
+OVERLAY_PROPS = ("show_floor", "show_selection", "show_object_extras", "show_annotation")
+_saved_overlays = {}
+
+
+def _xr_settings(context=None):
+    context = context or bpy.context
+    return getattr(context.window_manager, "xr_session_settings", None)
+
+
+def overlays_on(context=None):
+    st = _xr_settings(context)
+    return st is not None and any(getattr(st, p, False) for p in OVERLAY_PROPS)
+
+
+def toggle_overlays(context=None):
+    """All off (remembering what was on) / back to how they were. Returns the new state."""
+    st = _xr_settings(context)
+    if st is None:
+        raise RuntimeError("no XR session settings")
+    if overlays_on(context):
+        _saved_overlays.clear()
+        for p in OVERLAY_PROPS:
+            _saved_overlays[p] = getattr(st, p)
+            setattr(st, p, False)
+        return False
+    for p in OVERLAY_PROPS:
+        setattr(st, p, _saved_overlays.get(p, True))
+    return True

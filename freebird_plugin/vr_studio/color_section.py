@@ -4,7 +4,7 @@
 import bpy
 from mathutils import Vector
 
-from . import materials
+from . import brush, materials
 from .area import StudioSection, Tile
 from .palette import COLUMNS, swatches
 
@@ -16,6 +16,7 @@ WIDTH = COLUMNS * CELL - GAP + 2 * 0.006  # PAD on both sides: 0.184 m
 
 class ColorSection(StudioSection):
     title = "COLOR"
+    scope = "GLOBAL"
     idle_message = "Select, then pick a colour"
 
     def __init__(self):
@@ -33,6 +34,7 @@ class ColorSection(StudioSection):
 
     def press(self, tile):
         try:
+            brush.set_color(tile.linear, tile.label)  # what you draw next comes out in this colour
             targets = materials.selected_targets(bpy.context)
             report = materials.apply_color(targets, tile.linear)
             if report["objects"]:
@@ -43,7 +45,9 @@ class ColorSection(StudioSection):
                 bpy.ops.ed.undo_push(message=f"VR colour {tile.label}")
                 for t in self.tiles:
                     t.set_current(t is tile)
-            message = materials.describe(report)
+            message = materials.describe(report) if report["objects"] else f"Pen: {tile.label}"
+            for t in self.tiles:
+                t.set_current(t is tile)
             print(f"[vr_studio] colour {tile.label}: {report}")
         except Exception as e:
             import traceback
@@ -53,6 +57,6 @@ class ColorSection(StudioSection):
         self.finish(message)
 
     def refresh(self, mat):
-        col = materials.material_color(mat)
+        col = materials.material_color(mat) if mat is not None else brush.state["color"]
         for t in self.tiles:
             t.set_current(col is not None and all(abs(a - b) < 0.004 for a, b in zip(col, t.linear)))
