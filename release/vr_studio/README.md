@@ -61,8 +61,8 @@ The panels appear in the VR Studio area right next to the main menu and follow y
 |---|---|
 | **Color** | 32-colour palette. Select objects, point at a colour, pull the trigger — done. |
 | **Look** | 8 material looks: **Clay, Matte, Glossy, Plastic, Metallic, Glass, Emission, Toon**. Independent of Color: a blue Matte object turned Metallic stays blue, and a new colour keeps the look. |
-| **View** | Switches how *your headset* shows the scene: **Wireframe / Solid / Material Preview / Rendered**. It only changes your own view. |
-| **Grab** | Gravity Sketch style grab: a sphere on your middle finger grabs what it touches (reach Off / 3 / 5 / 8 cm). Squeeze + B deletes, squeeze + trigger duplicates, left X groups. |
+| **View** | Switches how *your headset* shows the scene: **Wireframe / Solid / Material Preview / Rendered**, Overlays on / off, and **Controller: Normal / See-through** (faint controllers, so the grab sphere and what is behind them stay visible). It only changes your own view. |
+| **Grab** | Gravity Sketch style grab: a sphere on your middle finger grabs what it touches (reach Off / 3 / 5 / 8 cm). Squeeze + B deletes, squeeze + trigger duplicates, left X groups. The sphere's position on your hand can be fine-tuned in 0.5 cm steps (Axis / - / + / Reset). |
 | **Edit** | Object / Edit / Pose Mode, Vert / Edge / Face, proportional editing. In Edit Mode the sphere grabs vertices. |
 | **Pudding** | Makes things jiggle: Off / Soft / Wobbly / Jelly. **New** puts a pudding in your hand. |
 

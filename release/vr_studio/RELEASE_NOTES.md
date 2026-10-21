@@ -26,13 +26,15 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 
 - **Grab** — Gravity Sketch style grab: a sphere on your middle finger (reach Off / 3 / 5 / 8 cm) grabs
   everything it touches; touched / held things get a red outline. Squeeze + B = delete, squeeze + trigger = duplicate.
+  The sphere's position on your hand can be fine-tuned in 0.5 cm steps (Axis / - / + / Reset).
 - **Buttons** — B = undo, A = Color panel, left X tap = group / ungroup, right stick = grab sphere size.
 - **Groups** — grabbing a member grabs the whole group; Color / Look colour every member.
 - **Edit** — Object / Edit / Pose Mode, Vert / Edge / Face, proportional editing. In Edit Mode the grab sphere grabs vertices.
 - **Pudding** — make things jiggle like a pudding (Off / Soft / Wobbly / Jelly), and **New** puts a pudding
   in your hand. Move it or bump it and it wobbles. The mesh itself is not changed.
 - **Pen** — the colour and look you pick are also what you draw next (works with nothing selected).
-- **View** — Overlays on / off; heavy modes are shown in amber.
+- **View** — Overlays on / off; heavy modes are shown in amber. **Controller: Normal / See-through** makes
+  Freebird's controller cards faint, so the grab sphere and what is behind them stay visible (just you).
 - Panel headers show **GLOBAL** (synced to the room) or **LOCAL** (just you).
 
 ## Features
