@@ -48,7 +48,7 @@ collab material + node tree sync (when a room is open) carries the change to eve
 
 import os
 
-fb_info = {"name": "VR Studio", "version": (0, 5, 0)}
+fb_info = {"name": "VR Studio", "version": (0, 5, 1)}
 
 PLUGIN_ID = "vr_studio"
 ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
@@ -137,8 +137,23 @@ def _icon(name):
     return p if os.path.exists(p) else None
 
 
+def _bridge_timer():
+    """Hook the FreebirdCollabo session (groups + pudding ride on the room). In or out of VR."""
+    try:
+        from . import collab_bridge
+
+        collab_bridge.ensure()
+    except Exception as e:
+        print(f"[vr_studio] collab bridge: {e}")
+    return 1.0
+
+
 def register():
+    import bpy
     from bl_xr import root, xr_session
+
+    if not bpy.app.timers.is_registered(_bridge_timer):
+        bpy.app.timers.register(_bridge_timer, first_interval=1.0, persistent=True)
     from freebird.api import add_launcher_button
 
     try:
@@ -169,7 +184,17 @@ def register():
 
 def unregister():
     global _area
+    import bpy
     from bl_xr import root
+
+    if bpy.app.timers.is_registered(_bridge_timer):
+        bpy.app.timers.unregister(_bridge_timer)
+    try:
+        from . import collab_bridge
+
+        collab_bridge.uninstall()
+    except Exception:
+        pass
     from freebird.api import remove_launcher_button
 
     for button_id, *_ in SECTIONS:
