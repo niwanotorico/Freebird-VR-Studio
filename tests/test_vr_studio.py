@@ -347,6 +347,19 @@ def run_ui():
     area._refresh()
     assert blue.current and not yellow.current and metal.current
 
+    # Flat / Smooth (bottom row of LOOK): shades the selected Cube, the tile follows the state
+    flat, smooth = look.shade_tiles
+    assert flat.shade == "FLAT" and smooth.shade == "SMOOTH" and hit(smooth, TILE) is smooth
+    cube_me = bpy.data.objects["Cube"].data
+    smooth.dispatch_event("pointer_main_press_end", None)
+    assert all(p.use_smooth for p in cube_me.polygons) and look.last_message == "Smooth: 1 object", look.last_message
+    area._refresh()
+    assert smooth.current and not flat.current
+    flat.dispatch_event("pointer_main_press_end", None)
+    assert not any(p.use_smooth for p in cube_me.polygons)
+    area._refresh()
+    assert flat.current and not smooth.current and metal.current
+
     # VIEW: the headset's shading (XR session settings), not the desktop viewport's
     from vr_studio import view
     from vr_studio.view_section import ViewSection

@@ -22,6 +22,20 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 - **Blender 5.2** (tested). Blender 4.2+ expected to work, not yet tested.
 - **Freebird XR 2.15.0** or newer.
 
+## New in v0.5.1
+
+- **Room sync for Pudding, groups and object colour** — with FreebirdCollabo, the Pudding level
+  (Off / Soft / Wobbly / Jelly), grouping / ungrouping done after an object exists, and the object colour
+  (Solid view "Object" mode, Freebird strokes) now reach everyone in the room. Everyone in the room needs
+  v0.5.1 or newer for this; people on older versions simply don't see it. The wobble itself is computed
+  on each PC. FreebirdCollabo itself is not changed.
+- **Tap to wobble, for everyone** — a pudding you bump with the grab sphere now wobbles on every PC in the room
+  (taps are summed and sent at most 20 times a second).
+- **Flat / Smooth** — new bottom row in the **Look** panel: Shade Flat or Shade Smooth for the selection
+  (meshes and pen strokes). Synced to the room with a FreebirdCollabo that carries shading.
+- **Pudding colour** — New pudding uses its own materials ("VR Pudding Custard / Caramel") and always gets its
+  colour, so it is never white in Material Preview because another "Custard" material was in the scene.
+
 ## New in v0.5
 
 - **Picker** — any colour, not just the 32 swatches: a hue × lightness map (pull the trigger, slide,
