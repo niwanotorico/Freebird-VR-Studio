@@ -6,6 +6,8 @@
     objects (and a loose pudding) for everyone else.
   * Pudding level (custom property `puddinger_jiggle`): Collabo does not sync custom properties.
   * object colour (ob.color: what Solid view shows in "Object" colour mode, and Freebird strokes)
+  * taps on a pudding (touching it with the grab sphere): the push goes out as "kick" so it wobbles
+    on every PC (a pudding that is MOVED wobbles everywhere already: its motion is synced)
 
 How: a small "vrs" message through the same session (the hub forwards any message type; peers
 without VR Studio simply ignore it). Nothing in Freebird / FreebirdCollabo is changed: we only
@@ -22,9 +24,10 @@ from mathutils import Matrix
 
 MSG = "vrs"
 SEND_EVERY = 0.15  # seconds
+KICK_EVERY = 0.05  # taps: summed and sent at most 20 times a second (relay requests stay low)
 PENDING_TTL = 10.0  # wait this long for a parent that has not arrived yet
 
-_state = {"session": None, "orig_tick": None, "orig_handle": None, "t": 0.0, "snap": None}
+_state = {"session": None, "orig_tick": None, "orig_handle": None, "t": 0.0, "t_kick": 0.0, "snap": None}
 _pending = {}  # child name -> (item, first seen)
 
 
@@ -102,8 +105,18 @@ def uninstall():
 def _send_changes(s):
     if not getattr(s, "active", False) or getattr(s, "uid", None) is None:
         _state["snap"] = None  # (re)joining starts from the scene as it is: the .blend carries it
+        from . import jiggle
+
+        jiggle.take_touches()  # taps made while not in a room are nobody else's business
         return
     now = time.time()
+    if now - _state["t_kick"] >= KICK_EVERY:
+        from . import jiggle
+
+        _state["t_kick"] = now
+        touches = jiggle.take_touches()
+        if touches:
+            s._send({"t": MSG, "objs": {}, "kick": touches})
     if now - _state["t"] < SEND_EVERY:
         return
     _state["t"] = now
@@ -145,6 +158,8 @@ def _send_changes(s):
 def _apply(msg):
     from . import jiggle
 
+    if msg.get("kick"):
+        jiggle.apply_touches(msg["kick"])
     changed = False
     for name, item in (msg.get("objs") or {}).items():
         ob = bpy.data.objects.get(name)

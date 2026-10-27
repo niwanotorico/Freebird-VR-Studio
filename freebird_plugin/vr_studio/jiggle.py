@@ -49,6 +49,7 @@ TOUCH_GAIN = 0.6
 REST = 1e-5
 
 _state = {}
+_outbox = {}  # body key -> summed local touch impulse not yet sent to the room (collab_bridge)
 _list = {"bodies": {}, "t": 0.0}
 _clock = {"t": None}
 _geo = {}
@@ -381,6 +382,22 @@ def kick(key, impulse_local):
     s["awake"] = True
 
 
+def take_touches():
+    """Touch impulses made here since the last call ({body key: (x, y, z)}), for the room."""
+    if not _outbox:
+        return {}
+    out = {k: tuple(round(c, 4) for c in v) for k, v in _outbox.items()}
+    _outbox.clear()
+    return out
+
+
+def apply_touches(touches):
+    """A tap someone else made: push the same body (its key is a group or object name)."""
+    for key, imp in (touches or {}).items():
+        if key in bpy.data.objects and len(imp) == 3:
+            kick(key, Vector(imp))
+
+
 def _advance(s, frame, g, dt, gain):
     mw = frame.matrix_world
     probe_local = Vector((g["center"].x, g["center"].y, g["base"] + PROBE * g["height"]))
@@ -450,7 +467,9 @@ def update(hand_pos=None, hand_vel=None, reach=0.0, held_names=()):
                     hv = hv * 0.15
                 if hv.length > MAX_DV:
                     hv = hv.normalized() * MAX_DV
-                kick(key, hv * TOUCH_GAIN * gain)
+                push = hv * TOUCH_GAIN * gain
+                kick(key, push)
+                _outbox[key] = _outbox.get(key, Vector()) + push  # a tap here wobbles it on every PC
             s["touch"] = touching
         if s["awake"]:
             _spring(s, dt, room)

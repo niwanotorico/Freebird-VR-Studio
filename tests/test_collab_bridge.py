@@ -11,6 +11,7 @@ HOST and GUEST are separate bpy processes joined in a direct-mode room. Checks:
   2  guest changes it to Jelly, then Off -> the host follows (both directions)
   3  host groups two existing objects under a new Empty -> the guest gets the same parent, positions unchanged
   4  host sets ob.color -> the guest gets it
+  6  host taps the Wobbly Ball (touch impulse) -> the guest's Ball gets the same push and wobbles
   5  a FreebirdCollabo reload (new session object) -> the bridge re-hooks the new session
 Skipped (exit 0) when FREEBIRD_COLLAB_DIR is not set or does not hold freebird_collab/.
 """
@@ -144,6 +145,23 @@ def run(role):
         _wait(lambda: _near(bpy.data.objects["Ball"].color, (1.0, 0.2, 0.1, 1.0)), 15, s, "object colour")
         print("GUEST 4 OK: object colour arrived")
         _put(g3=True)
+
+    # 6: a tap on a pudding wobbles it on the other PC too
+    if role == "host":
+        from mathutils import Vector
+
+        jiggle.make_jiggly(bpy.data.objects["Ball"], 2)
+        _wait(lambda: _get("g6_ready"), 15, s, "guest has the jiggly Ball")
+        jiggle._outbox["VRGroup"] = Vector((0.5, 0.0, 0.0))  # what jiggle.update() records for a tap
+        _wait(lambda: _get("g6"), 15, s, "guest saw the tap")
+        assert not jiggle._outbox, "tap not sent"
+    else:
+        _wait(lambda: jiggle.level(bpy.data.objects["Ball"]) == 2, 15, s, "Ball Wobbly")
+        jiggle._state.pop("VRGroup", None)
+        _put(g6_ready=True)
+        _wait(lambda: "VRGroup" in jiggle._state and jiggle._state["VRGroup"]["speed"].x > 0.4, 15, s, "tap arrived")
+        print("GUEST 6 OK: the host's tap pushed our pudding")
+        _put(g6=True)
 
     # 5: FreebirdCollabo reloaded -> a new session object; the bridge must hook it
     if role == "host":
