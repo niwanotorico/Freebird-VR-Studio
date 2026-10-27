@@ -107,6 +107,24 @@ def ball(look):
     _save(rgb, alpha, f"look_{look.lower()}.png", glow)
 
 
+def shade_ball(kind):
+    """Shade Flat / Smooth tiles: the same ball, faceted (flat) or not (smooth), Matte-like."""
+    n, inside, alpha = _sphere()
+    if kind == "flat":  # quantise the normal to a UV-sphere's faces: each face has one normal
+        lon = np.arctan2(n[..., 0], n[..., 2])
+        lat = np.arcsin(np.clip(n[..., 1], -1, 1))
+        step_lon, step_lat = np.pi / 6, np.pi / 7
+        lon = (np.floor(lon / step_lon) + 0.5) * step_lon
+        lat = (np.floor(lat / step_lat) + 0.5) * step_lat
+        n = np.dstack([np.cos(lat) * np.sin(lon), np.sin(lat), np.cos(lat) * np.cos(lon)])
+    ndl = np.clip(np.sum(n * L, axis=-1), 0, 1)[..., None]
+    ndh = np.clip(np.sum(n * H, axis=-1), 0, 1)[..., None]
+    c = np.array([0.92, 0.92, 0.95])[None, None, :]  # neutral grey: shading, not colour
+    rgb = c * (0.18 + 0.78 * ndl) + 0.25 * ndh ** 40
+    rgb = np.where(inside[..., None], rgb, 0)
+    _save(rgb, alpha, f"shade_{kind}.png")
+
+
 def launcher_look():
     """Launcher button icon for LOOK: three balls (matte / glossy / metallic)."""
     big = Image.new("RGBA", (S, S), (0, 0, 0, 0))
@@ -192,4 +210,6 @@ if __name__ == "__main__":
         view_icon(mode)
     for name in ("Clay", "Matte", "Glossy", "Plastic", "Metallic", "Glass", "Emission", "Toon"):
         ball(name)
+    shade_ball("flat")
+    shade_ball("smooth")
     print("icons ->", OUT)

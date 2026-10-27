@@ -16,15 +16,30 @@ SEGMENTS = 32
 CARAMEL_FROM = 7  # rings from here up are caramel
 
 
+def _principled(m):
+    if m.node_tree is None:
+        m.use_nodes = True
+    nt = m.node_tree
+    bs = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    out = next((n for n in nt.nodes if n.type == "OUTPUT_MATERIAL"), None)
+    if bs is None:
+        bs = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    if out is None:
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+    if not out.inputs["Surface"].links:
+        nt.links.new(bs.outputs["BSDF"], out.inputs["Surface"])
+    return bs
+
+
 def _material(name, color, roughness):
-    m = bpy.data.materials.get(name)
-    if m is not None:
-        return m
-    m = bpy.data.materials.new(name)
-    m.diffuse_color = (*color, 1)
-    m.use_nodes = True
-    bs = m.node_tree.nodes.get("Principled BSDF")
-    if bs is not None:
+    """The pudding's own material ("VR Pudding Custard" / "VR Pudding Caramel"). Another material that happens
+    to be called "Custard" in the scene is never borrowed, and ours always gets its colour back, so Material
+    Preview never shows a white pudding."""
+    name = f"VR Pudding {name}"
+    m = bpy.data.materials.get(name) or bpy.data.materials.new(name)
+    m.diffuse_color = (*color, 1)  # Solid view in "Material" colour mode
+    bs = _principled(m)
+    if tuple(bs.inputs["Base Color"].default_value)[:3] != tuple(color):
         bs.inputs["Base Color"].default_value = (*color, 1)
         bs.inputs["Roughness"].default_value = roughness
     return m
