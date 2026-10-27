@@ -1,14 +1,17 @@
-# Freebird VR Studio
+# Puddinger VR
 
 [English](README.md)
 
+> **Freebird XR 用の非公式プラグインです。** Puddinger VR は個人の独立したプロジェクトで、Freebird XR チームが作ったもの・公認したものではありません。
+> **旧名称は「Freebird VR Studio」／「VR Studio」** です。Freebird 本体と混同されないよう、Freebird の開発者からの依頼を受けて改名しました。
+
 **「Blender は強力だけど VR だと難しい」→「VR なら触るだけ」**
 
-VR Studio は [Freebird XR](https://freebirdxr.com)（Blender 用の VR モデリングアドオン）のプラグインです。
+Puddinger VR は [Freebird XR](https://freebirdxr.com)（Blender 用の VR モデリングアドオン）用の非公式プラグインです。
 Freebird の VR メニューの横に小さなパネルエリアを追加し、オブジェクトの色・マテリアルの質感・シーンの表示方法を、
 トリガーひと押しで切り替えられます。
 
-> 初期の公開版（アルファ）です。ご意見は [Issues](https://github.com/niwanotorico/Freebird-VR-Studio/issues) へどうぞ。
+> 初期の公開版（アルファ）です。ご意見は [Issues](https://github.com/niwanotorico/Puddinger-VR/issues) へどうぞ。
 
 ## できること
 
@@ -26,7 +29,7 @@ Color と Look は Freebird 標準の Undo / Redo で戻せます。
 
 ## インストール
 
-[Releases](https://github.com/niwanotorico/Freebird-VR-Studio/releases) から `vr_studio-v<バージョン>.zip` をダウンロードし、
+[Releases](https://github.com/niwanotorico/Puddinger-VR/releases) から `puddinger_vr-v<バージョン>.zip` をダウンロードし、
 普通の Blender アドオンと同じように入れます（**Edit › Preferences › Add-ons › ⌄ › Install from Disk…**。zip は解凍しない）。
 アドオンが Freebird XR 用にプラグインを配置するので、VR で Freebird メニュー → **Plugins** → Color / Picker / Look / View / Grab / Edit / Pudding を開きます。
 
@@ -36,7 +39,7 @@ Color と Look は Freebird 標準の Undo / Redo で戻せます。
 
 ## FreebirdCollabo と一緒に使う（任意）
 
-VR Studio は単体で動きます。[FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo) と併用すると、
+Puddinger VR は単体で動きます。[FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo) と併用すると、
 Color / Look の変更はそのマテリアル同期で部屋の全員に届きます。View は共有されません（各自の表示のまま）。
 既知の制限：Picker のオブジェクト色は部屋に同期しません（マテリアル色は同期します）。
 
@@ -54,7 +57,7 @@ docs/                          バージョンごとの開発記録
 ## 開発
 
 ```
-# dist/vr_studio-v<バージョン>.zip（+ リリースノート、.sha256）を作る。標準ライブラリのみ
+# dist/puddinger_vr-v<バージョン>.zip（+ リリースノート、.sha256）を作る。標準ライブラリのみ
 python tools/build_vr_studio_release.py
 
 # テスト（bpy モジュールが必要。無ければ Blender 経由で実行）
@@ -64,9 +67,14 @@ blender --background --factory-startup --python tests/blender_runner.py -- tests
 FREEBIRD_XR_DIR=<...> python3 tests/test_vr_studio_release.py
 ```
 
-2 インスタンスの同期テスト（VR Studio の変更が共同編集の部屋で相手に届くか）は FreebirdCollabo 側に残しています。
+2 インスタンスの同期テスト（Puddinger VR の変更が共同編集の部屋で相手に届くか）は FreebirdCollabo 側に残しています。
 
 ## ライセンス
 
 GPL-2.0-or-later（Freebird XR と同じ）。[LICENSE](LICENSE) を参照。
-VR Studio は独立したプロジェクトで、Freebird XR チームとは関係ありません。
+Puddinger VR は非公式の独立したプラグインで、Freebird XR チームとは関係がなく、公認も受けていません。
+
+## 謝辞
+
+Freebird と、そのプラグイン API を作ってくださった [Freebird XR](https://freebirdxr.com) の開発者 **cmdr2** さんに心から感謝します。
+両プロジェクトを見分けやすくするための改名も、丁寧に提案していただきました。Freebird がなければ Puddinger VR は生まれていません。
