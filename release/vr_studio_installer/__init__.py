@@ -228,8 +228,11 @@ def _done_message(backup, reloaded):
 
 
 def auto_setup():
-    """Runs once per installed add-on zip (after enabling it). Never overwrites a newer plugin."""
-    if _read_state() is not None:
+    """Runs once per installed add-on zip (after enabling it). Never overwrites a newer plugin.
+    Blender keeps setup_state.json when a zip is installed over an existing one, so the state
+    only counts as "done" if it was written by this bundled version (0.5.2 fix)."""
+    state = _read_state()
+    if state is not None and state.get("bundled") == vstr(read_version(PAYLOAD)):
         return None
     code, installed = status()
     try:

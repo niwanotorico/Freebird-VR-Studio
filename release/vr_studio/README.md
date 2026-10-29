@@ -44,7 +44,7 @@ It does **not** modify Blender, Freebird XR or any other add-on.
 Install the newer zip the same way (Install from Disk). When the add-on is enabled it replaces the old
 plugin, after moving the old copy to a backup folder (`~/.freebird/plugin_backups/`). Nothing is deleted.
 If a *newer* Puddinger VR is already installed, it is left alone.
-If the add-on still says *update available* afterwards, press **Update Puddinger VR** in its preferences.
+If the add-on still says *update available* afterwards (e.g. after a failed copy), press **Update Puddinger VR** in its preferences.
 (Coming from VR Studio: the add-on is the same one, now shown as **Puddinger VR**.)
 
 ### What the add-on shows
