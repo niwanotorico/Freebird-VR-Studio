@@ -28,7 +28,8 @@ Uninstall: add-on preferences → **Remove Puddinger VR Plugin**, then remove th
   request of Freebird XR's developer (cmdr2), so new users don't mistake it for part of Freebird XR. Thank you, cmdr2!
 - **Updating from VR Studio:** install this zip the same way (Install from Disk). It replaces the old
   *VR Studio for Freebird XR* entry in the Add-ons list (it is the same add-on, now shown as *Puddinger VR*)
-  and updates the plugin by itself (the old plugin is backed up first). Restart Blender once.
+  Then **restart Blender**: on the next start it updates the plugin by itself (the old plugin is backed up first).
+  No button to press.
 - **Fix: updating by installing a newer zip now really updates.** Blender keeps the add-on's setup record when
   a zip is installed over an older one, so v0.5.0 / v0.5.1 skipped the automatic update and you had to press
   *Update*. The add-on now updates whenever the bundled version changes (a newer plugin is still left alone). Your settings (panel layout, grab offset) and .blend files are kept, and
