@@ -1,20 +1,23 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """
-Build the end-user zip for VR Studio: a Blender add-on you install with
+Build the end-user zip for Puddinger VR (formerly VR Studio): a Blender add-on you install with
 Edit > Preferences > Add-ons > Install from Disk.
 
-    python tools/build_vr_studio_release.py      # -> dist/vr_studio-v<version>.zip (+ release notes, .sha256)
+    python tools/build_vr_studio_release.py      # -> dist/puddinger_vr-v<version>.zip (+ release notes, .sha256)
 
 Zip layout (Blender extracts the zip into its add-ons folder, so everything lives in ONE folder):
 
     vr_studio_installer/
-        __init__.py            the setup add-on (install / update / remove only, no VR Studio features)
+        __init__.py            the setup add-on (install / update / remove only, no Puddinger VR features)
         payload/vr_studio/     the Freebird plugin, copied unchanged from freebird_plugin/vr_studio
                                (only git-tracked .py + icons/*.png; no tests, docs, caches)
         README.md  LICENSE.txt
 
 The version comes from fb_info["version"] in freebird_plugin/vr_studio/__init__.py and must match
 bl_info["version"] of the setup add-on. Standard library only.
+
+Only the zip FILE name changed with the rename; the folder inside the zip stays vr_studio_installer
+(= Blender add-on id), so a new zip updates an existing install instead of adding a second add-on.
 """
 
 import ast
@@ -89,7 +92,7 @@ def build():
     version = versions()
     files, source = plugin_files()
     os.makedirs(DIST, exist_ok=True)
-    zip_path = os.path.join(DIST, f"vr_studio-v{version}.zip")
+    zip_path = os.path.join(DIST, f"puddinger_vr-v{version}.zip")
 
     with zipfile.ZipFile(zip_path, "w") as z:
         with open(os.path.join(ADDON_SRC, "__init__.py"), "rb") as f:
@@ -104,12 +107,12 @@ def build():
     with open(zip_path, "rb") as f:
         sha = hashlib.sha256(f.read()).hexdigest()
     notes = _text(os.path.join(NOTES, "RELEASE_NOTES.md"), version).replace("@SHA256@", sha)
-    with open(os.path.join(DIST, f"RELEASE_NOTES-vr_studio-v{version}.md"), "w", encoding="utf-8", newline="\n") as f:
+    with open(os.path.join(DIST, f"RELEASE_NOTES-puddinger_vr-v{version}.md"), "w", encoding="utf-8", newline="\n") as f:
         f.write(notes)
     with open(zip_path + ".sha256", "w", encoding="ascii", newline="\n") as f:
         f.write(f"{sha}  {os.path.basename(zip_path)}\n")
 
-    print(f"VR Studio v{version}: add-on + {len(files)} plugin files (from {source})")
+    print(f"Puddinger VR v{version}: add-on + {len(files)} plugin files (from {source})")
     print(f"  {zip_path}  ({os.path.getsize(zip_path)} bytes)")
     print(f"  sha256 {sha}")
     return zip_path

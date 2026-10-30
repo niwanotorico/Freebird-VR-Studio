@@ -1,14 +1,18 @@
-# Freebird VR Studio
+# Puddinger VR
 
 [日本語](README_JA.md)
 
+> **Unofficial plugin for Freebird XR.** Puddinger VR is an independent project and is not made or endorsed by
+> the Freebird XR team. It was **formerly called "Freebird VR Studio" / "VR Studio"** and was renamed at the request
+> of Freebird's developer, so new users don't confuse it with Freebird XR itself.
+
 **"Blender is powerful but hard in VR" → "in VR you just touch it."**
 
-VR Studio is a plugin for [Freebird XR](https://freebirdxr.com) (the VR modeling add-on for Blender).
+Puddinger VR is an unofficial plugin for [Freebird XR](https://freebirdxr.com) (the VR modeling add-on for Blender).
 It adds a small panel area next to Freebird's VR menu where you can colour objects, give them a
 material look, and switch how the scene is shaded — all with one press of the trigger.
 
-> Early public version (alpha). Feedback is welcome on the [issues page](https://github.com/niwanotorico/Freebird-VR-Studio/issues).
+> Early public version (alpha). Feedback is welcome on the [issues page](https://github.com/niwanotorico/Puddinger-VR/issues).
 
 ## Features
 
@@ -26,7 +30,7 @@ Freebird's own Undo / Redo cover Color and Look.
 
 ## Install
 
-Download `vr_studio-v<version>.zip` from [Releases](https://github.com/niwanotorico/Freebird-VR-Studio/releases)
+Download `puddinger_vr-v<version>.zip` from [Releases](https://github.com/niwanotorico/Puddinger-VR/releases)
 and install it like any Blender add-on (**Edit › Preferences › Add-ons › ⌄ › Install from Disk…**, don't unzip).
 The add-on sets the plugin up for Freebird XR; then open the Freebird menu in VR → **Plugins** → Color / Picker / Look / View / Grab / Edit / Pudding.
 
@@ -36,7 +40,7 @@ Requirements: Blender 5.2 (tested; 4.2+ expected to work), Freebird XR 2.15.0 or
 
 ## Using it with FreebirdCollabo (optional)
 
-VR Studio works on its own. Together with [FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo)
+Puddinger VR works on its own. Together with [FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo)
 (shown as *Freebird Collaboration Layer* in Blender's add-on list), Color / Look changes reach everyone in
 the room through its material sync. View is never shared.
 Known limitation: Picker's object colour (Solid view's "Object" colour) does not sync to the room; the material colour does.
@@ -55,7 +59,7 @@ docs/                          development notes per version (Japanese)
 ## Development
 
 ```
-# build dist/vr_studio-v<version>.zip (+ release notes, .sha256) - standard library only
+# build dist/puddinger_vr-v<version>.zip (+ release notes, .sha256) - standard library only
 python tools/build_vr_studio_release.py
 
 # tests (need the bpy module, or run them through Blender)
@@ -65,9 +69,15 @@ blender --background --factory-startup --python tests/blender_runner.py -- tests
 FREEBIRD_XR_DIR=<...> python3 tests/test_vr_studio_release.py
 ```
 
-The two-instance sync test (VR Studio changes travelling through the collab room) stays in FreebirdCollabo.
+The two-instance sync test (Puddinger VR changes travelling through the collab room) stays in FreebirdCollabo.
 
 ## License
 
 GPL-2.0-or-later (same as Freebird XR). See [LICENSE](LICENSE).
-VR Studio is an independent project and is not affiliated with the Freebird XR team.
+Puddinger VR is an unofficial, independent plugin and is not affiliated with or endorsed by the Freebird XR team.
+
+## Thanks
+
+Huge thanks to **cmdr2**, the developer of [Freebird XR](https://freebirdxr.com), for building Freebird and its
+plugin API — and for kindly suggesting the new name so both projects are easier to tell apart. Puddinger VR
+would not exist without Freebird.

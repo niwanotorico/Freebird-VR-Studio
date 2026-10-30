@@ -1,26 +1,41 @@
-# VR Studio v@VERSION@ — Picker (alpha)
+# Puddinger VR v@VERSION@ — renamed from VR Studio (alpha)
 
-**Tag:** `vr-studio-v@VERSION@` · **Pre-release** · Asset: `vr_studio-v@VERSION@.zip`
+**Tag:** `puddinger-vr-v@VERSION@` · **Pre-release** · Asset: `puddinger_vr-v@VERSION@.zip`
 
-VR Studio is a plugin for **Freebird XR** that lets you colour, restyle and re-shade your Blender
+Puddinger VR is an **unofficial** plugin for **Freebird XR** that lets you colour, restyle and re-shade your Blender
 scene from inside VR with one trigger press. It is a separate download from the
 [FreebirdCollabo](https://github.com/niwanotorico/FreebirdCollabo) add-on and works without it.
 
 ## Install (like any Blender add-on)
 
-1. Download **`vr_studio-v@VERSION@.zip`** below — don't unzip it.
+1. Download **`puddinger_vr-v@VERSION@.zip`** below — don't unzip it.
 2. Blender → **Edit › Preferences › Add-ons › ⌄ › Install from Disk…** → pick the zip → make sure
-   **VR Studio for Freebird XR** is enabled.
+   **Puddinger VR** is enabled.
 3. Start VR → Freebird menu → **Plugins** → **Color / Picker / Look / View / Grab / Edit / Pudding** (restart Blender once if they're not there yet).
 
 The add-on only sets up the plugin for Freebird XR (install / update / remove). Updating = installing a
 newer zip the same way; the old plugin is backed up to `~/.freebird/plugin_backups/` first.
-Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the add-on.
+Uninstall: add-on preferences → **Remove Puddinger VR Plugin**, then remove the add-on.
 
 ## Requirements
 
 - **Blender 5.2** (tested). Blender 4.2+ expected to work, not yet tested.
 - **Freebird XR 2.15.0** or newer.
+
+## New in v0.5.2 — VR Studio is now Puddinger VR
+
+- **New name only, no feature changes.** "VR Studio" / "Freebird VR Studio" is now **Puddinger VR**, at the
+  request of Freebird XR's developer (cmdr2), so new users don't mistake it for part of Freebird XR. Thank you, cmdr2!
+- **Updating from VR Studio:** install this zip the same way (Install from Disk). It replaces the old
+  *VR Studio for Freebird XR* entry in the Add-ons list (it is the same add-on, now shown as *Puddinger VR*)
+  Then **restart Blender**: on the next start it updates the plugin by itself (the old plugin is backed up first).
+  No button to press.
+- **Fix: updating by installing a newer zip now really updates.** Blender keeps the add-on's setup record when
+  a zip is installed over an older one, so v0.5.0 / v0.5.1 skipped the automatic update and you had to press
+  *Update*. The add-on now updates whenever the bundled version changes (a newer plugin is still left alone). Your settings (panel layout, grab offset) and .blend files are kept, and
+  rooms with people still on VR Studio v0.5.1 keep syncing.
+- The GitHub repository moved to [niwanotorico/Puddinger-VR](https://github.com/niwanotorico/Puddinger-VR);
+  old links redirect. Earlier releases (VR Studio v0.4.0 – v0.5.1) stay available.
 
 ## New in v0.5.1
 
@@ -41,7 +56,7 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 - **Picker** — any colour, not just the 32 swatches: a hue × lightness map (pull the trigger, slide,
   let go) and an 8-step saturation strip. **Pick** is an eyedropper: touch something with the grab sphere
   and its colour becomes your pen's / current colour; **Paint** colours the selection with it.
-- **Menu** — closing Freebird's menu hides the VR Studio panels too; opening it brings them back
+- **Menu** — closing Freebird's menu hides the Puddinger VR panels too; opening it brings them back
   (A still opens the Color panel while the menu is closed).
 - **Pudding** — **New** makes the pudding as two objects (custard + caramel) in one group, so the caramel
   stays brown in Solid view's "Object" colour mode; the group wobbles as one.
@@ -69,7 +84,7 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 - **Look** — 8 material presets: Clay / Matte / Glossy / Plastic / Metallic / Glass / Emission / Toon.
   Look and Color are independent of each other.
 - **View** — headset shading switch: Wireframe / Solid / Material Preview / Rendered. Local to you only.
-- Panels live in a VR Studio area to the right of Freebird's main menu and follow your hand.
+- Panels live in a Puddinger VR area to the right of Freebird's main menu and follow your hand.
 - Freebird's Undo / Redo work for Color and Look.
 - With FreebirdCollabo: Color / Look changes sync to everyone; View never syncs.
 
@@ -84,5 +99,5 @@ Uninstall: add-on preferences → **Remove VR Studio Plugin**, then remove the a
 ## Checksums
 
 ```
-@SHA256@  vr_studio-v@VERSION@.zip
+@SHA256@  puddinger_vr-v@VERSION@.zip
 ```

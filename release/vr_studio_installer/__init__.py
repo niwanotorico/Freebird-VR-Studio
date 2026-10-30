@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """
-VR Studio for Freebird XR - Blender add-on that installs / updates / removes the VR Studio
-Freebird plugin. It contains NO VR Studio features itself: the bundled `payload/vr_studio`
+Puddinger VR (formerly "VR Studio for Freebird XR") - Blender add-on that installs / updates / removes the Puddinger VR
+Freebird plugin. It contains NO Puddinger VR features itself: the bundled `payload/vr_studio`
 folder (the Freebird plugin, unchanged) is copied to
 
     ~/.freebird/plugins/vr_studio        (C:\\Users\\<you>\\.freebird\\plugins\\vr_studio)
@@ -15,19 +15,22 @@ Rules:
       - older / different copy       -> move that copy to ~/.freebird/plugin_backups/, then copy
       - a NEWER version is installed -> leave it alone (Install button still available)
   * Disabling or removing this add-on never touches the plugin (it keeps working in Freebird).
-  * "Remove VR Studio Plugin" in the add-on preferences deletes the plugin folder after a
+  * "Remove Puddinger VR Plugin" in the add-on preferences deletes the plugin folder after a
     confirmation. Backups are never deleted automatically.
 """
 
+# Renamed from "VR Studio for Freebird XR" (v0.5.2). The add-on module name (vr_studio_installer),
+# the operator ids (vr_studio_setup.*) and the plugin folder (~/.freebird/plugins/vr_studio) are
+# deliberately unchanged, so installing a new zip still updates an existing install in place.
 bl_info = {
-    "name": "VR Studio for Freebird XR",
+    "name": "Puddinger VR",
     "author": "niwanotorico",
-    "version": (0, 5, 1),
+    "version": (0, 5, 2),
     "blender": (4, 2, 0),
-    "location": "Edit > Preferences > Add-ons > VR Studio for Freebird XR",
-    "description": "Installs the VR Studio plugin (Color / Picker / Look / View / Grab / Edit / Pudding panels) into Freebird XR",
-    "doc_url": "https://github.com/niwanotorico/Freebird-VR-Studio",
-    "tracker_url": "https://github.com/niwanotorico/Freebird-VR-Studio/issues",
+    "location": "Edit > Preferences > Add-ons > Puddinger VR",
+    "description": "Unofficial plugin for Freebird XR (formerly VR Studio): installs the Color / Picker / Look / View / Grab / Edit / Pudding panels",
+    "doc_url": "https://github.com/niwanotorico/Puddinger-VR",
+    "tracker_url": "https://github.com/niwanotorico/Puddinger-VR/issues",
     "category": "3D View",
 }
 
@@ -147,7 +150,7 @@ def install_plugin():
     The new copy is fully written next to the target (as a hidden '.'-folder Freebird ignores)
     before anything is moved, and the old copy is put back if the swap fails."""
     if not os.path.isfile(os.path.join(PAYLOAD, "__init__.py")):
-        raise RuntimeError("the bundled VR Studio files are missing - please reinstall the add-on zip")
+        raise RuntimeError("the bundled Puddinger VR files are missing - please reinstall the add-on zip")
     os.makedirs(plugins_dir(), exist_ok=True)
     if os.path.isdir(plugin_dir()) and same_as_payload(plugin_dir()):
         return None
@@ -188,7 +191,7 @@ def reload_freebird_plugins():
                 mod.load_plugins()
                 return True
             except Exception as e:
-                print(f"[VR Studio setup] Freebird plugin reload failed: {e}")
+                print(f"[Puddinger VR setup] Freebird plugin reload failed: {e}")
                 return False
     return False
 
@@ -206,17 +209,17 @@ def _write_state(**kw):
         with open(STATE_FILE, "w", encoding="utf-8") as f:
             json.dump(kw, f)
     except Exception as e:
-        print(f"[VR Studio setup] could not write {STATE_FILE}: {e}")
+        print(f"[Puddinger VR setup] could not write {STATE_FILE}: {e}")
 
 
 def _set_message(msg):
     global _last_message
     _last_message = msg
-    print(f"[VR Studio setup] {msg}")
+    print(f"[Puddinger VR setup] {msg}")
 
 
 def _done_message(backup, reloaded):
-    parts = [f"VR Studio {vstr(read_version(PAYLOAD))} is installed."]
+    parts = [f"Puddinger VR {vstr(read_version(PAYLOAD))} is installed."]
     if backup:
         parts.append(f"The previous copy was backed up to {backup}.")
     parts.append("Color / Look / View are in Freebird's Plugins menu." if reloaded
@@ -225,36 +228,39 @@ def _done_message(backup, reloaded):
 
 
 def auto_setup():
-    """Runs once per installed add-on zip (after enabling it). Never overwrites a newer plugin."""
-    if _read_state() is not None:
+    """Runs once per installed add-on zip (after enabling it). Never overwrites a newer plugin.
+    Blender keeps setup_state.json when a zip is installed over an existing one, so the state
+    only counts as "done" if it was written by this bundled version (0.5.2 fix)."""
+    state = _read_state()
+    if state is not None and state.get("bundled") == vstr(read_version(PAYLOAD)):
         return None
     code, installed = status()
     try:
         if code == "newer":
-            _set_message(f"A newer VR Studio ({vstr(installed)}) is already installed - left unchanged.")
+            _set_message(f"A newer Puddinger VR ({vstr(installed)}) is already installed - left unchanged.")
         elif code == "current":
-            _set_message(f"VR Studio {vstr(installed)} is already installed and up to date.")
+            _set_message(f"Puddinger VR {vstr(installed)} is already installed and up to date.")
         else:
             backup = install_plugin()
             _set_message(_done_message(backup, reload_freebird_plugins()))
         _write_state(bundled=vstr(read_version(PAYLOAD)), result=code)
     except Exception as e:
-        _set_message(f"Could not install VR Studio automatically: {e}. Use the Install button to try again.")
+        _set_message(f"Could not install Puddinger VR automatically: {e}. Use the Install button to try again.")
     return None  # one-shot timer
 
 
 # ----------------------------------------------------------------------------- UI
 class VRSTUDIO_OT_install(bpy.types.Operator):
     bl_idname = "vr_studio_setup.install"
-    bl_label = "Install / Update VR Studio"
-    bl_description = "Copy the bundled VR Studio plugin into Freebird XR's plugins folder (an existing copy is backed up first)"
+    bl_label = "Install / Update Puddinger VR"
+    bl_description = "Copy the bundled Puddinger VR plugin into Freebird XR's plugins folder (an existing copy is backed up first)"
     bl_options = {"INTERNAL"}
 
     def invoke(self, context, event):
         code, installed = status()
         if code in ("newer", "modified"):
             return context.window_manager.invoke_confirm(
-                self, event, title="Replace installed VR Studio?",
+                self, event, title="Replace installed Puddinger VR?",
                 message=f"Installed: {vstr(installed)} -> bundled: {vstr(read_version(PAYLOAD))}. "
                         "The installed copy will be moved to the backups folder.",
                 confirm_text="Replace")
@@ -274,13 +280,13 @@ class VRSTUDIO_OT_install(bpy.types.Operator):
 
 class VRSTUDIO_OT_remove(bpy.types.Operator):
     bl_idname = "vr_studio_setup.remove"
-    bl_label = "Remove VR Studio Plugin"
-    bl_description = "Delete the VR Studio plugin folder from Freebird XR's plugins folder (asks first)"
+    bl_label = "Remove Puddinger VR Plugin"
+    bl_description = "Delete the Puddinger VR plugin folder from Freebird XR's plugins folder (asks first)"
     bl_options = {"INTERNAL"}
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(
-            self, event, title="Remove VR Studio from Freebird XR?",
+            self, event, title="Remove Puddinger VR from Freebird XR?",
             message=f"This deletes {plugin_dir()}. Materials you made stay in your .blend files.",
             confirm_text="Remove", icon="WARNING")
 
@@ -292,7 +298,7 @@ class VRSTUDIO_OT_remove(bpy.types.Operator):
             _set_message(f"Could not remove the folder: {e}. Close Blender and delete it by hand: {plugin_dir()}")
         if ok:
             reloaded = reload_freebird_plugins()
-            _set_message("VR Studio plugin removed." + ("" if reloaded else " Restart Blender to finish.")
+            _set_message("Puddinger VR plugin removed." + ("" if reloaded else " Restart Blender to finish.")
                          + " You can now also remove this add-on.")
             self.report({"INFO"}, _last_message)
             return {"FINISHED"}
@@ -323,7 +329,7 @@ _STATUS_TEXT = {
     "older": ("Installed {v} - update available ({b})", "INFO"),
     "modified": ("Installed {v} - differs from this add-on's copy", "INFO"),
     "newer": ("Installed {v} - newer than this add-on ({b})", "INFO"),
-    "broken": ("Folder exists but is not a VR Studio plugin", "ERROR"),
+    "broken": ("Folder exists but is not a Puddinger VR plugin", "ERROR"),
 }
 
 
@@ -337,7 +343,7 @@ class VRSTUDIO_AddonPreferences(bpy.types.AddonPreferences):
         text, icon = _STATUS_TEXT[code]
 
         box = layout.box()
-        box.label(text="VR Studio plugin: " + text.format(v=vstr(installed), b=vstr(bundled)), icon=icon)
+        box.label(text="Puddinger VR plugin: " + text.format(v=vstr(installed), b=vstr(bundled)), icon=icon)
         box.label(text=f"Bundled in this add-on: {vstr(bundled)}")
         col = box.column(align=True)
         col.scale_y = 0.8
@@ -347,11 +353,11 @@ class VRSTUDIO_AddonPreferences(bpy.types.AddonPreferences):
 
         row = layout.row(align=True)
         row.scale_y = 1.3
-        label = {"missing": "Install VR Studio", "older": "Update VR Studio", "current": "Reinstall"}.get(code, "Replace with bundled version")
+        label = {"missing": "Install Puddinger VR", "older": "Update Puddinger VR", "current": "Reinstall"}.get(code, "Replace with bundled version")
         row.operator(VRSTUDIO_OT_install.bl_idname, text=label, icon="IMPORT")
         sub = row.row(align=True)
         sub.enabled = code != "missing"
-        sub.operator(VRSTUDIO_OT_remove.bl_idname, text="Remove VR Studio Plugin", icon="TRASH")
+        sub.operator(VRSTUDIO_OT_remove.bl_idname, text="Remove Puddinger VR Plugin", icon="TRASH")
 
         row = layout.row(align=True)
         row.operator(VRSTUDIO_OT_open_folder.bl_idname, text="Open Plugins Folder", icon="FILE_FOLDER").which = "PLUGINS"
@@ -368,7 +374,7 @@ class VRSTUDIO_AddonPreferences(bpy.types.AddonPreferences):
         help_col.scale_y = 0.8
         help_col.label(text="In VR: Freebird menu > Plugins > Color / Look / View.")
         help_col.label(text="Disabling or removing this add-on keeps the plugin. To uninstall completely:")
-        help_col.label(text="press 'Remove VR Studio Plugin' first, then remove this add-on.")
+        help_col.label(text="press 'Remove Puddinger VR Plugin' first, then remove this add-on.")
 
 
 def _wrap(text, width):

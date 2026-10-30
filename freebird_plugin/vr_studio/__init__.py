@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """
-VR Studio: "Blender is powerful but hard in VR" -> "in VR you just touch it".
+Puddinger VR (formerly "VR Studio"): "Blender is powerful but hard in VR" -> "in VR you just touch it".
 
 A Freebird XR plugin (folder plugin). Install by copying the whole `vr_studio` folder to
     ~/.freebird/plugins/vr_studio/      (C:\\Users\\<you>\\.freebird\\plugins\\vr_studio)
@@ -48,7 +48,9 @@ collab material + node tree sync (when a room is open) carries the change to eve
 
 import os
 
-fb_info = {"name": "VR Studio", "version": (0, 5, 1)}
+# Shown name renamed from "VR Studio" (v0.5.2). The folder / PLUGIN_ID stay "vr_studio" so existing installs,
+# ~/.freebird/vr_studio_settings.json and room sync keep working.
+fb_info = {"name": "Puddinger VR", "version": (0, 5, 2)}
 
 PLUGIN_ID = "vr_studio"
 ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
